@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, AlertTriangle, BarChart3, Users, Lock, Clock, ArrowRight } from 'lucide-react';
+import { Shield, AlertTriangle, BarChart3, Users, Brain, Clock, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function LandingPage() {
@@ -36,9 +36,11 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 relative overflow-hidden">
+      <div className="absolute inset-0 cyber-grid-bg opacity-30 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-slate-900/40 to-slate-900 pointer-events-none" />
       {/* Header */}
-      <header className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
@@ -77,35 +79,80 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <section className="py-20 md:py-32">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 rounded-full px-4 py-2 mb-6">
-              <Lock className="w-4 h-4 text-teal-400" />
-              <span className="text-teal-300 text-sm font-medium">AI-Enabled Cyber Security Platform</span>
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 bg-teal-500/10 border border-teal-500/30 rounded-full px-4 py-2 mb-6">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-teal-400"></span>
+                </span>
+                <span className="text-teal-300 text-sm font-medium">AI Engine Active — Scanning for Threats</span>
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+                AI-Powered Cyber
+                <br />
+                <span className="text-teal-400">Incident &amp; Safety Portal</span>
+              </h1>
+              <p className="text-xl text-slate-300 max-w-2xl mx-auto lg:mx-0 mb-10">
+                Report cyber incidents and get instant AI-driven risk scoring, category
+                detection, and real-time safety alerts — built for SIH Problem Statement #25183.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                <Link
+                  to={user ? '/dashboard/report' : '/signup'}
+                  className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all hover:scale-105 flex items-center gap-2 shadow-lg shadow-teal-500/25"
+                >
+                  Report an Incident
+                  <ArrowRight className="w-5 h-5" />
+                </Link>
+                <Link
+                  to="/alerts"
+                  className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all border border-slate-600"
+                >
+                  View Safety Alerts
+                </Link>
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Report Cyber Incidents
-              <br />
-              <span className="text-teal-400">Stay Safe Online</span>
-            </h1>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto mb-10">
-              India's comprehensive cyber incident reporting portal. Report phishing, fraud, hacking, and other cyber threats. Get AI-powered insights and real-time safety alerts.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                to={user ? '/dashboard/report' : '/signup'}
-                className="bg-teal-500 hover:bg-teal-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all hover:scale-105 flex items-center gap-2 shadow-lg shadow-teal-500/25"
-              >
-                Report an Incident
-                <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                to="/alerts"
-                className="bg-slate-700 hover:bg-slate-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all border border-slate-600"
-              >
-                View Safety Alerts
-              </Link>
+
+            <div className="relative flex items-center justify-center">
+              <div className="relative w-72 h-72 md:w-96 md:h-96">
+                <div className="absolute inset-0 rounded-full border border-teal-500/20" />
+                <div className="absolute inset-6 rounded-full border border-teal-500/15" />
+                <div className="absolute inset-12 rounded-full border border-teal-500/10" />
+
+                <div className="absolute inset-0 rounded-full overflow-hidden">
+                  <div className="absolute -inset-1/2 animate-scan-line bg-gradient-to-b from-teal-400/0 via-teal-400/20 to-teal-400/0 h-full" />
+                </div>
+
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="bg-slate-800/80 border border-teal-500/40 rounded-2xl p-6 backdrop-blur-sm shadow-2xl shadow-teal-500/20 text-center w-56">
+                    <Brain className="w-10 h-10 text-teal-400 mx-auto mb-3" />
+                    <p className="text-white font-semibold mb-1">AI Threat Analysis</p>
+                    <p className="text-slate-400 text-sm mb-4 font-mono animate-cursor">
+                      Analyzing incident...
+                    </p>
+                    <div className="space-y-2 text-left">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Risk Score</span>
+                        <span className="text-orange-400 font-mono">78%</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div className="h-full w-[78%] bg-gradient-to-r from-orange-500 to-red-500 rounded-full" />
+                      </div>
+                      <div className="flex justify-between text-xs pt-1">
+                        <span className="text-slate-400">Category</span>
+                        <span className="text-teal-300 font-mono">Phishing</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="absolute top-4 right-8 w-3 h-3 bg-red-400 rounded-full animate-float-glow shadow-lg shadow-red-500/50" />
+                <div className="absolute bottom-10 left-4 w-2 h-2 bg-teal-400 rounded-full animate-float-glow shadow-lg shadow-teal-500/50" style={{ animationDelay: '1.2s' }} />
+                <div className="absolute top-1/2 -right-2 w-2.5 h-2.5 bg-yellow-400 rounded-full animate-float-glow shadow-lg shadow-yellow-500/50" style={{ animationDelay: '2s' }} />
+              </div>
             </div>
           </div>
         </section>

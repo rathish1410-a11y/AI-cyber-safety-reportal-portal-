@@ -120,10 +120,23 @@ export default function DashboardLayout() {
             <Link to="/" className="flex items-center gap-2">
               <Shield className="w-8 h-8 text-teal-400" />
               <div>
-                <span className="text-lg font-bold text-white">CyberSafe India</span>
-                <p className="text-xs text-slate-400">Security Reporting Portal</p>
+                <span className="text-lg font-bold text-white tracking-tight">CyberSafe India</span>
+                <p className="text-xs text-slate-400 font-mono">Security Reporting Portal</p>
               </div>
             </Link>
+          </div>
+
+          <div className="px-4 pt-4">
+            <div className="flex items-center justify-between bg-slate-900/60 border border-slate-700 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+                </span>
+                <span className="text-xs font-mono text-emerald-400">AI MONITORING</span>
+              </div>
+              <span className="text-xs font-mono text-slate-500">ONLINE</span>
+            </div>
           </div>
 
           <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
