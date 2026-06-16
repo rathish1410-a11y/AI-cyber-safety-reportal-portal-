@@ -51,8 +51,8 @@ export default function AlertsPage() {
             <Link to="/" className="flex items-center gap-3">
               <div className="relative w-8 h-8">
                 <div className="absolute inset-0 rounded-full border" style={{ borderColor: 'rgba(56,189,248,0.3)', boxShadow: '0 0 10px rgba(56,189,248,0.15)' }} />
-                <div className="absolute inset-1.5 rounded-full flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.08)' }}>
-                  <Shield className="w-3.5 h-3.5" style={{ color: 'var(--cyber-blue)' }} />
+                <div className="absolute inset-1.5 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'rgba(56,189,248,0.08)' }}>
+                  <img src="/favicon.png" className="w-4 h-4 object-contain" />
                 </div>
               </div>
               <span className="text-base font-display font-bold text-white tracking-[0.15em]">CYBERSAFE</span>

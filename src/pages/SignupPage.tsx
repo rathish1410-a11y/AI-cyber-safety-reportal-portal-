@@ -58,8 +58,8 @@ export default function SignupPage() {
             <div className="relative w-14 h-14">
               <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: 'rgba(56,189,248,0.3)', boxShadow: '0 0 20px rgba(56,189,248,0.15)' }} />
               <div className="absolute inset-2 rounded-full border" style={{ borderColor: 'rgba(56,189,248,0.12)' }} />
-              <div className="absolute inset-0 rounded-full flex items-center justify-center">
-                <Shield className="w-6 h-6" style={{ color: 'var(--cyber-blue)', filter: 'drop-shadow(0 0 5px rgba(56,189,248,0.5))' }} />
+              <div className="absolute inset-0 rounded-full flex items-center justify-center overflow-hidden">
+                <img src="/favicon.png" className="w-7 h-7 object-contain" style={{ filter: 'drop-shadow(0 0 5px rgba(56,189,248,0.5))' }} />
               </div>
             </div>
             <span className="text-xl font-display font-bold text-white tracking-[0.15em]">CYBERSAFE</span>

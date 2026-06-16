@@ -66,8 +66,8 @@ export default function DashboardLayout() {
           </button>
           <Link to="/" className="flex items-center gap-2">
             <div className="relative">
-              <div className="w-8 h-8 rounded-full border flex items-center justify-center" style={{ borderColor: 'var(--cyber-blue)', background: 'var(--cyber-blue-dim)', boxShadow: '0 0 12px var(--cyber-glow)' }}>
-                <Shield className="w-4 h-4" style={{ color: 'var(--cyber-blue)' }} />
+              <div className="w-8 h-8 rounded-full border flex items-center justify-center overflow-hidden" style={{ borderColor: 'var(--cyber-blue)', background: 'var(--cyber-blue-dim)', boxShadow: '0 0 12px var(--cyber-glow)' }}>
+                <img src="/favicon.png" className="w-4 h-4 object-contain" />
               </div>
             </div>
             <span className="text-lg font-display font-bold text-white tracking-[0.15em]">CYBERSAFE</span>
@@ -83,8 +83,8 @@ export default function DashboardLayout() {
           <aside className="relative w-72 flex flex-col border-r" style={{ background: 'var(--dark-surface)', borderColor: 'var(--dark-border)' }}>
             <div className="flex items-center justify-between p-5 border-b" style={{ borderColor: 'var(--dark-border)' }}>
               <Link to="/" className="flex items-center gap-3">
-                <div className="relative w-9 h-9 rounded-full border flex items-center justify-center" style={{ borderColor: 'var(--cyber-blue)', background: 'var(--cyber-blue-dim)', boxShadow: '0 0 14px var(--cyber-glow)' }}>
-                  <Shield className="w-4 h-4" style={{ color: 'var(--cyber-blue)' }} />
+                <div className="relative w-9 h-9 rounded-full border flex items-center justify-center overflow-hidden" style={{ borderColor: 'var(--cyber-blue)', background: 'var(--cyber-blue-dim)', boxShadow: '0 0 14px var(--cyber-glow)' }}>
+                  <img src="/favicon.png" className="w-5 h-5 object-contain" />
                 </div>
                 <span className="text-base font-display font-bold text-white tracking-[0.15em]">CYBERSAFE</span>
               </Link>
@@ -140,7 +140,7 @@ export default function DashboardLayout() {
                 {/* Inner ring */}
                 <div className="absolute inset-1.5 rounded-full border" style={{ borderColor: 'rgba(56,189,248,0.15)' }} />
                 {/* Icon */}
-                <Lock className="w-4 h-4 relative z-10" style={{ color: 'var(--cyber-blue)', filter: 'drop-shadow(0 0 5px rgba(56,189,248,0.6))' }} />
+                <img src="/favicon.png" className="w-5 h-5 relative z-10 object-contain" style={{ filter: 'drop-shadow(0 0 5px rgba(56,189,248,0.6))' }} />
                 {/* Live dot */}
                 <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full live-dot" style={{ background: 'var(--cyber-green)' }} />
               </div>

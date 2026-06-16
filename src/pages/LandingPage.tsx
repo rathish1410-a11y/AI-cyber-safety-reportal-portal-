@@ -36,8 +36,8 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <div className="relative w-9 h-9">
                 <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: 'rgba(56,189,248,0.3)', boxShadow: '0 0 12px rgba(56,189,248,0.2)' }} />
-                <div className="absolute inset-1.5 rounded-full flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.1)' }}>
-                  <Shield className="w-4 h-4" style={{ color: 'var(--cyber-blue)', filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.6))' }} />
+                <div className="absolute inset-1.5 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'rgba(56,189,248,0.1)' }}>
+                  <img src="/favicon.png" className="w-5 h-5 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(56,189,248,0.6))' }} />
                 </div>
               </div>
               <div>
