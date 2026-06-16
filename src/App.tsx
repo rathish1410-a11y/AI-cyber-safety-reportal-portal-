@@ -1,7 +1,5 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import { supabase } from './lib/supabase';
 
 // Pages
 import LandingPage from './pages/LandingPage';
@@ -31,27 +29,13 @@ import PhishingDetector from './pages/tools/PhishingDetector';
 
 // Detects Supabase recovery token in URL and redirects to reset page
 function RecoveryRedirect({ children }: { children: React.ReactNode }) {
-  const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    // Check URL hash for recovery token (Supabase appends #access_token=...&type=recovery)
-    const hash = window.location.hash;
-    if (hash && hash.includes('type=recovery')) {
-      // Redirect to reset-password page, keeping the hash so Supabase can pick up the token
-      navigate('/reset-password' + hash, { replace: true });
-      return;
-    }
-
-    // Also listen for PASSWORD_RECOVERY event from Supabase
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY' && location.pathname !== '/reset-password') {
-        navigate('/reset-password', { replace: true });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  // Check URL hash SYNCHRONOUSLY during render (before landing page shows)
+  const hash = window.location.hash;
+  if (hash && hash.includes('type=recovery') && location.pathname !== '/reset-password') {
+    return <Navigate to={'/reset-password' + hash} replace />;
+  }
 
   return <>{children}</>;
 }
