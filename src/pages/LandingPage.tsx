@@ -46,24 +46,29 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <nav className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-slate-400 hover:text-white transition-colors text-sm font-mono tracking-wider">FEATURES</a>
-              <a href="#stats" className="text-slate-400 hover:text-white transition-colors text-sm font-mono tracking-wider">STATS</a>
+            <div className="flex items-center gap-3 md:gap-6">
+              {/* Features and Stats - Desktop only */}
+              <div className="hidden md:flex items-center gap-6">
+                <a href="#features" className="text-slate-400 hover:text-white transition-colors text-sm font-mono tracking-wider">FEATURES</a>
+                <a href="#stats" className="text-slate-400 hover:text-white transition-colors text-sm font-mono tracking-wider">STATS</a>
+              </div>
+
+              {/* Authentication Actions - Mobile & Desktop */}
               {user ? (
-                <Link to="/dashboard" className="cyber-btn-solid px-5 py-2 rounded-lg text-sm font-semibold font-mono">
+                <Link to="/dashboard" className="cyber-btn-solid px-4 py-1.5 md:px-5 md:py-2 rounded-lg text-xs md:text-sm font-semibold font-mono">
                   DASHBOARD
                 </Link>
               ) : (
-                <div className="flex items-center gap-3">
-                  <Link to="/login" className="text-sm font-mono tracking-wider transition-colors" style={{ color: 'rgba(56,189,248,0.7)' }} onMouseOver={e => (e.target as HTMLElement).style.color = 'var(--cyber-blue)'} onMouseOut={e => (e.target as HTMLElement).style.color = 'rgba(56,189,248,0.7)'}>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <Link to="/login" className="text-xs md:text-sm font-mono tracking-wider transition-colors px-2 py-1" style={{ color: 'rgba(56,189,248,0.7)' }} onMouseOver={e => (e.target as HTMLElement).style.color = 'var(--cyber-blue)'} onMouseOut={e => (e.target as HTMLElement).style.color = 'rgba(56,189,248,0.7)'}>
                     LOGIN
                   </Link>
-                  <Link to="/signup" className="cyber-btn-solid px-5 py-2 rounded-lg text-sm font-semibold font-mono">
+                  <Link to="/signup" className="cyber-btn-solid px-4 py-1.5 md:px-5 md:py-2 rounded-lg text-xs md:text-sm font-semibold font-mono">
                     SIGN UP
                   </Link>
                 </div>
               )}
-            </nav>
+            </div>
           </div>
         </div>
       </header>
