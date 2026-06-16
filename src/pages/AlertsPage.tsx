@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, Shield, Clock, ArrowRight } from 'lucide-react';
+import { AlertTriangle, Shield, Clock, ArrowRight, Radio } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { Alert } from '../types/database';
@@ -10,56 +10,27 @@ export default function AlertsPage() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAlerts();
-  }, []);
+  useEffect(() => { fetchAlerts(); }, []);
 
   async function fetchAlerts() {
-    const { data } = await supabase
-      .from('alerts')
-      .select('*')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
+    const { data } = await supabase.from('alerts').select('*').eq('is_active', true).order('created_at', { ascending: false });
     if (data) setAlerts(data);
     setLoading(false);
   }
 
-  const getSeverityStyles = (severity: string) => {
-    const styles = {
-      low: {
-        border: 'border-l-slate-500',
-        bg: 'bg-slate-500/5',
-        badge: 'bg-slate-500/20 text-slate-300',
-        icon: 'text-slate-400',
-      },
-      medium: {
-        border: 'border-l-yellow-500',
-        bg: 'bg-yellow-500/5',
-        badge: 'bg-yellow-500/20 text-yellow-300',
-        icon: 'text-yellow-400',
-      },
-      high: {
-        border: 'border-l-orange-500',
-        bg: 'bg-orange-500/5',
-        badge: 'bg-orange-500/20 text-orange-300',
-        icon: 'text-orange-400',
-      },
-      critical: {
-        border: 'border-l-red-500',
-        bg: 'bg-red-500/5',
-        badge: 'bg-red-500/20 text-red-300',
-        icon: 'text-red-400',
-      },
+  const getSeverityStyle = (severity: string) => {
+    const s = {
+      low:      { borderColor: 'rgba(56,189,248,0.4)',  bg: 'rgba(56,189,248,0.03)',  badgeBg: 'rgba(56,189,248,0.1)',  badgeColor: 'var(--cyber-blue)',  iconColor: 'var(--cyber-blue)' },
+      medium:   { borderColor: 'rgba(245,158,11,0.5)',  bg: 'rgba(245,158,11,0.03)',  badgeBg: 'rgba(245,158,11,0.1)',  badgeColor: 'var(--cyber-amber)', iconColor: 'var(--cyber-amber)' },
+      high:     { borderColor: 'rgba(249,115,22,0.5)',  bg: 'rgba(249,115,22,0.03)',  badgeBg: 'rgba(249,115,22,0.1)',  badgeColor: '#fb923c',            iconColor: '#fb923c' },
+      critical: { borderColor: 'rgba(239,68,68,0.6)',   bg: 'rgba(239,68,68,0.04)',   badgeBg: 'rgba(239,68,68,0.1)',   badgeColor: 'var(--cyber-red)',   iconColor: 'var(--cyber-red)' },
     };
-    return styles[severity as keyof typeof styles] || styles.medium;
+    return s[severity as keyof typeof s] || s.medium;
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
+    const days = Math.floor((Date.now() - date.getTime()) / 86400000);
     if (days === 0) return 'Today';
     if (days === 1) return 'Yesterday';
     if (days < 7) return `${days} days ago`;
@@ -67,82 +38,100 @@ export default function AlertsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900">
+    <div className="min-h-screen relative" style={{ background: 'var(--dark-bg)' }}>
+      <div className="absolute inset-0 cyber-grid-bg pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse at 50% 20%, rgba(56,189,248,0.04) 0%, transparent 50%)'
+      }} />
+
       {/* Header */}
-      <header className="border-b border-slate-700/50 bg-slate-900/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b sticky top-0 z-50 backdrop-blur-md relative" style={{ background: 'rgba(6,14,26,0.85)', borderColor: 'rgba(56,189,248,0.08)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <Link to="/" className="flex items-center gap-2">
-              <Shield className="w-8 h-8 text-teal-400" />
-              <span className="text-xl font-bold text-white">CyberSafe India</span>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="relative w-8 h-8">
+                <div className="absolute inset-0 rounded-full border" style={{ borderColor: 'rgba(56,189,248,0.3)', boxShadow: '0 0 10px rgba(56,189,248,0.15)' }} />
+                <div className="absolute inset-1.5 rounded-full flex items-center justify-center" style={{ background: 'rgba(56,189,248,0.08)' }}>
+                  <Shield className="w-3.5 h-3.5" style={{ color: 'var(--cyber-blue)' }} />
+                </div>
+              </div>
+              <span className="text-base font-display font-bold text-white tracking-[0.15em]">CYBERSAFE</span>
             </Link>
-            <nav className="flex items-center gap-4">
+            <nav>
               {user ? (
-                <Link
-                  to="/dashboard"
-                  className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                >
-                  Dashboard
-                </Link>
+                <Link to="/dashboard" className="cyber-btn-solid px-4 py-2 rounded-lg text-sm font-mono font-semibold">DASHBOARD</Link>
               ) : (
-                <Link
-                  to="/login"
-                  className="text-slate-300 hover:text-white font-medium"
-                >
-                  Login
-                </Link>
+                <Link to="/login" className="text-sm font-mono transition-colors" style={{ color: 'rgba(56,189,248,0.7)' }}>LOGIN</Link>
               )}
             </nav>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <div className="mb-8">
-          <div className="flex items-center gap-2 text-teal-400 mb-2">
-            <AlertTriangle className="w-5 h-5" />
-            <span className="text-sm font-medium">Safety Advisories</span>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--cyber-blue)' }} />
+            <Radio className="w-4 h-4" style={{ color: 'rgba(56,189,248,0.6)' }} />
+            <span className="text-xs font-mono tracking-wider" style={{ color: 'rgba(56,189,248,0.6)' }}>LIVE SECURITY FEED</span>
           </div>
-          <h1 className="text-3xl font-bold text-white mb-3">Safety Alerts</h1>
-          <p className="text-slate-400">
+          <h1 className="text-3xl font-display font-bold text-white mb-3 tracking-wider">SAFETY ALERTS</h1>
+          <p className="text-slate-500 font-mono text-sm">
             Stay informed about the latest cyber threats and security advisories from our team.
           </p>
         </div>
 
         {loading ? (
-          <div className="text-center py-12 text-slate-400">Loading alerts...</div>
+          <div className="flex flex-col items-center justify-center py-16 gap-4">
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-2 animate-spin" style={{ borderColor: 'rgba(56,189,248,0.1)', borderTopColor: 'var(--cyber-blue)' }} />
+            </div>
+            <span className="terminal-text text-xs" style={{ color: 'rgba(56,189,248,0.5)' }}>LOADING ALERTS<span className="terminal-cursor"></span></span>
+          </div>
         ) : alerts.length === 0 ? (
-          <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-            <AlertTriangle className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-            <p className="text-slate-400 mb-2">No active safety alerts at this time</p>
-            <p className="text-slate-500 text-sm">Check back later for updates</p>
+          <div className="cyber-card cyber-frame p-12 text-center">
+            <div className="relative w-16 h-16 mx-auto mb-5">
+              <div className="absolute inset-0 rounded-full border" style={{ borderColor: 'rgba(56,189,248,0.1)' }} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <AlertTriangle className="w-8 h-8" style={{ color: 'rgba(56,189,248,0.2)' }} />
+              </div>
+            </div>
+            <p className="text-slate-400 font-mono mb-1">NO_ACTIVE_ALERTS</p>
+            <p className="text-slate-600 text-xs font-mono">Check back later for updates</p>
           </div>
         ) : (
           <div className="space-y-4">
             {alerts.map((alert) => {
-              const styles = getSeverityStyles(alert.severity);
+              const style = getSeverityStyle(alert.severity);
               return (
                 <div
                   key={alert.id}
-                  className={`border-l-4 ${styles.border} ${styles.bg} bg-slate-800/50 border border-slate-700 rounded-xl p-6`}
+                  className="cyber-card p-6 transition-all"
+                  style={{ borderLeft: `2px solid ${style.borderColor}`, background: style.bg }}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-3 flex-wrap">
                         <span
-                          className={`text-xs px-2.5 py-1 rounded-full capitalize ${styles.badge}`}
+                          className="cyber-badge"
+                          style={{ background: style.badgeBg, color: style.badgeColor, border: `1px solid ${style.borderColor}` }}
                         >
                           {alert.severity} severity
                         </span>
-                        <span className="text-slate-500 text-sm flex items-center gap-1">
-                          <Clock className="w-4 h-4" />
+                        <span className="text-slate-600 text-xs font-mono flex items-center gap-1.5">
+                          <Clock className="w-3 h-3" />
                           {formatDate(alert.created_at)}
                         </span>
                       </div>
-                      <h2 className="text-xl font-semibold text-white mb-2">{alert.title}</h2>
-                      <p className="text-slate-300 leading-relaxed">{alert.content}</p>
+                      <h2 className="text-lg font-semibold text-white mb-2">{alert.title}</h2>
+                      <p className="text-slate-400 text-sm leading-relaxed">{alert.content}</p>
                     </div>
-                    <AlertTriangle className={`w-6 h-6 ${styles.icon} flex-shrink-0 mt-1`} />
+                    <div className="relative w-8 h-8 flex-shrink-0">
+                      <div className="absolute inset-0 rounded-full border" style={{ borderColor: style.borderColor, opacity: 0.3 }} />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <AlertTriangle className="w-4 h-4" style={{ color: style.iconColor }} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
@@ -150,33 +139,32 @@ export default function AlertsPage() {
           </div>
         )}
 
-        {/* CTA for non-logged users */}
+        {/* CTA */}
         {!user && (
-          <div className="mt-12 bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 text-center">
-            <h2 className="text-2xl font-bold text-white mb-3">Report a Cyber Incident</h2>
-            <p className="text-teal-100 mb-6">
-              If you've encountered a cyber threat, report it now and help protect others.
-            </p>
-            <Link
-              to="/signup"
-              className="inline-flex items-center gap-2 bg-white text-teal-700 px-6 py-3 rounded-lg font-semibold hover:bg-slate-100 transition-colors"
-            >
-              Create Account
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+          <div className="mt-12 cyber-card cyber-frame p-8 text-center relative overflow-hidden" style={{ borderColor: 'rgba(56,189,248,0.15)' }}>
+            <div className="absolute inset-0 cyber-grid-bg opacity-50 pointer-events-none" />
+            <div className="relative z-10">
+              <h2 className="text-2xl font-display font-bold text-white mb-3 tracking-wider">REPORT A CYBER INCIDENT</h2>
+              <p className="mb-6 text-sm font-mono" style={{ color: 'rgba(56,189,248,0.5)' }}>
+                If you've encountered a cyber threat, report it now and help protect others.
+              </p>
+              <Link to="/signup" className="cyber-btn-solid inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold font-mono">
+                CREATE ACCOUNT
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-slate-700/50 bg-slate-900/50 mt-20">
+      <footer className="border-t mt-12 relative" style={{ background: 'rgba(6,14,26,0.8)', borderColor: 'rgba(56,189,248,0.06)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Shield className="w-6 h-6 text-teal-400" />
-              <span className="text-white font-semibold">CyberSafe India</span>
+              <Shield className="w-5 h-5" style={{ color: 'var(--cyber-blue)' }} />
+              <span className="text-white font-mono font-semibold text-sm tracking-wider">CYBERSAFE INDIA</span>
             </div>
-            <p className="text-slate-400 text-sm">Smart India Hackathon 2024</p>
+            <p className="text-slate-600 text-xs font-mono">Smart India Hackathon 2024</p>
           </div>
         </div>
       </footer>

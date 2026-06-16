@@ -23,6 +23,9 @@ import AdminIncidents from './pages/admin/AdminIncidents';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminAlerts from './pages/admin/AdminAlerts';
 
+// AI Tools
+import PhishingDetector from './pages/tools/PhishingDetector';
+
 function AppRoutes() {
   return (
     <Routes>
@@ -44,6 +47,7 @@ function AppRoutes() {
         <Route index element={<CitizenOverview />} />
         <Route path="report" element={<ReportIncident />} />
         <Route path="incidents" element={<MyIncidents />} />
+        <Route path="phishing-detector" element={<PhishingDetector />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
@@ -60,6 +64,7 @@ function AppRoutes() {
         <Route path="incidents" element={<AdminIncidents />} />
         <Route path="analytics" element={<AdminAnalytics />} />
         <Route path="alerts" element={<AdminAlerts />} />
+        <Route path="phishing-detector" element={<PhishingDetector />} />
         <Route path="profile" element={<ProfilePage isAdmin />} />
       </Route>
 

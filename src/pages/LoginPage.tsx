@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+
+// Only this account gets the role switcher
+const SUPER_EMAIL = 'rathish1410@gmail.com';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { signIn, profile } = useAuth();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<'admin' | 'citizen'>('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const isSuperAccount = email.toLowerCase() === SUPER_EMAIL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,49 +24,72 @@ export default function LoginPage() {
     setLoading(true);
 
     const { error } = await signIn(email, password);
-
     if (error) {
       setError('Invalid email or password. Please try again.');
       setLoading(false);
     } else {
-      // Navigation will happen via auth state change
+      // For the super account, store chosen role override in sessionStorage
+      if (isSuperAccount) {
+        sessionStorage.setItem('role_override', selectedRole);
+      } else {
+        sessionStorage.removeItem('role_override');
+      }
+
+      // Navigate based on chosen role (super) or wait for profile (others)
       setTimeout(() => {
-        if (profile?.role === 'admin') {
-          navigate('/admin');
+        if (isSuperAccount) {
+          navigate(selectedRole === 'admin' ? '/admin' : '/dashboard');
         } else {
           navigate('/dashboard');
         }
-      }, 500);
+      }, 300);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center px-4 relative" style={{ background: 'var(--dark-bg)' }}>
+      {/* Background grid */}
+      <div className="absolute inset-0 cyber-grid-bg opacity-100 pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse at 50% 40%, rgba(56,189,248,0.06) 0%, transparent 60%)'
+      }} />
+
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <Shield className="w-10 h-10 text-teal-400" />
-            <span className="text-2xl font-bold text-white">CyberSafe India</span>
+          <Link to="/" className="inline-flex flex-col items-center gap-3 mb-6">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 rounded-full border-2" style={{ borderColor: 'rgba(56,189,248,0.3)', boxShadow: '0 0 20px rgba(56,189,248,0.2)' }} />
+              <div className="absolute inset-2 rounded-full border" style={{ borderColor: 'rgba(56,189,248,0.15)' }} />
+              <div className="absolute inset-0 rounded-full flex items-center justify-center">
+                <Shield className="w-7 h-7" style={{ color: 'var(--cyber-blue)', filter: 'drop-shadow(0 0 6px rgba(56,189,248,0.6))' }} />
+              </div>
+            </div>
+            <span className="text-xl font-display font-bold text-white tracking-[0.15em]">CYBERSAFE</span>
           </Link>
-          <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-          <p className="text-slate-400">Sign in to access your dashboard</p>
+          <h1 className="text-xl font-bold text-white mb-1 font-mono tracking-wider">SECURE ACCESS</h1>
+          <p className="text-slate-500 text-sm font-mono">Sign in to access your dashboard</p>
         </div>
 
-        <div className="bg-slate-800/50 border border-slate-700 rounded-2xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Card */}
+        <div className="cyber-card cyber-frame p-8" style={{ borderColor: 'rgba(56,189,248,0.12)' }}>
+          <div className="absolute top-0 left-8 right-8 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.4), transparent)' }} />
+
+          <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 flex items-center gap-3">
-                <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
-                <p className="text-red-300 text-sm">{error}</p>
+              <div className="rounded-lg p-4 flex items-center gap-3 border" style={{ background: 'rgba(239,68,68,0.06)', borderColor: 'rgba(239,68,68,0.2)' }}>
+                <AlertCircle className="w-5 h-5 flex-shrink-0" style={{ color: 'var(--cyber-red)' }} />
+                <p className="text-sm font-mono" style={{ color: '#fca5a5' }}>{error}</p>
               </div>
             )}
 
+            {/* Email */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="email" className="block text-xs font-mono uppercase tracking-wider mb-2" style={{ color: 'rgba(56,189,248,0.6)' }}>
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(56,189,248,0.4)' }} />
                 <input
                   id="email"
                   type="email"
@@ -68,17 +97,18 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="cyber-input w-full rounded-lg pl-10 pr-4 py-3"
                 />
               </div>
             </div>
 
+            {/* Password */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+              <label htmlFor="password" className="block text-xs font-mono uppercase tracking-wider mb-2" style={{ color: 'rgba(56,189,248,0.6)' }}>
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'rgba(56,189,248,0.4)' }} />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
@@ -86,55 +116,77 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
                   required
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-12 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                  className="cyber-input w-full rounded-lg pl-10 pr-12 py-3"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                  style={{ color: 'rgba(56,189,248,0.4)' }}
                 >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
+            {/* Role switcher — only visible for the super account */}
+            {isSuperAccount && (
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider mb-2" style={{ color: 'rgba(56,189,248,0.6)' }}>
+                  Login As
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: 'admin', label: 'ADMIN', icon: Shield },
+                    { value: 'citizen', label: 'CITIZEN', icon: User },
+                  ].map(({ value, label, icon: Icon }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setSelectedRole(value as 'admin' | 'citizen')}
+                      className="p-3 rounded-lg border transition-all flex flex-col items-center gap-1.5"
+                      style={selectedRole === value ? {
+                        background: 'rgba(56,189,248,0.08)',
+                        borderColor: 'rgba(56,189,248,0.5)',
+                        color: 'var(--cyber-blue)',
+                        boxShadow: '0 0 14px rgba(56,189,248,0.12)',
+                      } : {
+                        background: 'rgba(56,189,248,0.02)',
+                        borderColor: 'rgba(56,189,248,0.1)',
+                        color: '#475569',
+                      }}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <span className="text-xs font-mono font-bold">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-teal-500/50 disabled:cursor-not-allowed text-white py-3 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2"
+              className="w-full cyber-btn-solid py-3 rounded-lg font-semibold font-mono tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Signing in...
+                  <div className="w-4 h-4 border-2 rounded-full animate-spin" style={{ borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#fff' }} />
+                  AUTHENTICATING...
                 </>
               ) : (
-                'Sign In'
+                'SIGN IN'
               )}
             </button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-slate-400">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-teal-400 hover:text-teal-300 font-medium">
-                Sign up
+            <p className="text-slate-500 text-sm font-mono">
+              No account?{' '}
+              <Link to="/signup" className="font-medium transition-colors" style={{ color: 'var(--cyber-blue)' }}>
+                Register
               </Link>
             </p>
-          </div>
-
-          <div className="mt-6 pt-6 border-t border-slate-700">
-            <p className="text-slate-500 text-xs text-center mb-3">Test Accounts</p>
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="bg-slate-700/30 rounded p-2">
-                <p className="text-slate-400">Admin</p>
-                <p className="text-teal-400 font-mono">admin@cybersafe.com</p>
-              </div>
-              <div className="bg-slate-700/30 rounded p-2">
-                <p className="text-slate-400">Citizen</p>
-                <p className="text-teal-400 font-mono">user@cybersafe.com</p>
-              </div>
-            </div>
           </div>
         </div>
       </div>

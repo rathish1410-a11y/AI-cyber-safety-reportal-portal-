@@ -19,30 +19,25 @@ export default function AdminIncidents() {
 
   async function fetchIncidents() {
     setLoading(true);
-    let query = supabase
-      .from('incidents')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (filterStatus) query = query.eq('status', filterStatus);
-    if (filterSeverity) query = query.eq('severity', filterSeverity);
-    if (filterType) query = query.eq('incident_type', filterType);
-
-    const { data } = await query;
-    if (data) {
-      if (searchQuery) {
-        setIncidents(
-          data.filter(
-            (i) =>
-              i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              i.description.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        );
-      } else {
-        setIncidents(data);
-      }
+    try {
+      let query = supabase
+        .from('incidents')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (filterStatus) query = query.eq('status', filterStatus);
+      if (filterSeverity) query = query.eq('severity', filterSeverity);
+      if (filterType) query = query.eq('incident_type', filterType);
+      const { data } = await query;
+      const results = data || [];
+      setIncidents(searchQuery ? results.filter(i =>
+        i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ) : results);
+    } catch {
+      setIncidents([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   const handleSearch = () => {
@@ -71,10 +66,10 @@ export default function AdminIncidents() {
 
   const getSeverityBadge = (severity: string) => {
     const colors = {
-      low: 'bg-slate-500/20 text-slate-300',
-      medium: 'bg-yellow-500/20 text-yellow-300',
-      high: 'bg-orange-500/20 text-orange-300',
-      critical: 'bg-red-500/20 text-red-300',
+      low: 'bg-slate-500/20 text-slate-300 shadow-[0_0_6px_rgba(148,163,184,0.15)]',
+      medium: 'bg-yellow-500/20 text-yellow-300 shadow-[0_0_6px_rgba(250,204,21,0.2)]',
+      high: 'bg-orange-500/20 text-orange-300 shadow-[0_0_6px_rgba(251,146,60,0.2)]',
+      critical: 'bg-red-500/20 text-red-300 shadow-[0_0_6px_rgba(248,113,113,0.25)]',
     };
     return colors[severity as keyof typeof colors] || colors.low;
   };
@@ -103,6 +98,13 @@ export default function AdminIncidents() {
     return 'text-green-400';
   };
 
+  const getRiskBarColor = (score: number) => {
+    if (score >= 80) return 'bg-red-500';
+    if (score >= 60) return 'bg-orange-500';
+    if (score >= 40) return 'bg-yellow-500';
+    return 'bg-green-500';
+  };
+
   const incidentTypes: IncidentType[] = [
     'phishing',
     'fraud',
@@ -116,30 +118,39 @@ export default function AdminIncidents() {
   const statuses: IncidentStatus[] = ['pending', 'in_review', 'resolved'];
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white mb-2">Manage Incidents</h1>
-        <p className="text-slate-400">View and manage all reported incidents</p>
+    <div className="relative p-6 lg:p-8 min-h-screen">
+      {/* Background effects */}
+      <div className="cyber-grid-bg" />
+      <div className="scanline-overlay" />
+
+      {/* Header */}
+      <div className="relative mb-8">
+        <h1 className="font-display text-2xl font-bold tracking-wider text-neon-cyan mb-2">
+          INCIDENT MANAGEMENT
+        </h1>
+        <p className="font-mono text-sm text-slate-400">
+          View and manage all reported incidents
+        </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-4 mb-6">
+      <div className="cyber-card relative rounded-xl p-4 mb-6">
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <div className="lg:col-span-2 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-cyber-400/50" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Search incidents..."
-              className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-2.5 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500"
+              className="cyber-input w-full pl-10 pr-4 py-2.5"
             />
           </div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500"
+            className="cyber-select px-4 py-2.5"
           >
             <option value="">All Status</option>
             {statuses.map((s) => (
@@ -151,7 +162,7 @@ export default function AdminIncidents() {
           <select
             value={filterSeverity}
             onChange={(e) => setFilterSeverity(e.target.value)}
-            className="bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500"
+            className="cyber-select px-4 py-2.5"
           >
             <option value="">All Severity</option>
             {severities.map((s) => (
@@ -163,7 +174,7 @@ export default function AdminIncidents() {
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-teal-500"
+            className="cyber-select px-4 py-2.5"
           >
             <option value="">All Types</option>
             {incidentTypes.map((t) => (
@@ -176,23 +187,25 @@ export default function AdminIncidents() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-400">Loading...</div>
+        <div className="text-center py-12">
+          <span className="terminal-text text-neon-cyan text-lg">Loading incident data...</span>
+        </div>
       ) : incidents.length === 0 ? (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-          <p className="text-slate-400">No incidents found</p>
+        <div className="cyber-card relative rounded-xl p-12 text-center">
+          <p className="terminal-text text-slate-400">No incidents found</p>
         </div>
       ) : (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden">
+        <div className="cyber-card relative rounded-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="cyber-table w-full">
               <thead>
-                <tr className="border-b border-slate-700">
-                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Title</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Type</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Severity</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Status</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">AI Score</th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-slate-400">Date</th>
+                <tr className="border-b border-[rgba(56,189,248,0.1)]">
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Title</th>
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Type</th>
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Severity</th>
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Status</th>
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">AI Score</th>
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Date</th>
                   <th className="px-6 py-4"></th>
                 </tr>
               </thead>
@@ -202,17 +215,17 @@ export default function AdminIncidents() {
                   return (
                     <tr
                       key={incident.id}
-                      className="border-b border-slate-700/50 hover:bg-slate-700/20 transition-colors"
+                      className="border-b border-[rgba(56,189,248,0.05)] hover:bg-[rgba(56,189,248,0.03)] transition-colors"
                     >
                       <td className="px-6 py-4">
                         <p className="text-white font-medium">{incident.title}</p>
                       </td>
-                      <td className="px-6 py-4 text-slate-300 capitalize">
+                      <td className="px-6 py-4 text-slate-300 capitalize font-mono text-sm">
                         {incident.incident_type.replace('_', ' ')}
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
+                          className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
                             incident.severity
                           )}`}
                         >
@@ -226,10 +239,10 @@ export default function AdminIncidents() {
                             onChange={(e) =>
                               updateIncidentStatus(incident.id, e.target.value as IncidentStatus)
                             }
-                            className={`${statusBadge.className} text-xs px-2 py-1 rounded appearance-none cursor-pointer pr-6`}
+                            className={`cyber-badge ${statusBadge.className} text-xs px-2 py-1 rounded appearance-none cursor-pointer pr-6`}
                           >
                             {statuses.map((s) => (
-                              <option key={s} value={s} className="bg-slate-800">
+                              <option key={s} value={s} className="bg-dark-900">
                                 {s.replace('_', ' ').charAt(0).toUpperCase() +
                                   s.replace('_', ' ').slice(1)}
                               </option>
@@ -240,18 +253,26 @@ export default function AdminIncidents() {
                       </td>
                       <td className="px-6 py-4">
                         {incident.ai_risk_score !== null && (
-                          <span className={`font-mono ${getRiskScoreColor(incident.ai_risk_score)}`}>
-                            {incident.ai_risk_score}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <div className="risk-bar w-16 h-1.5">
+                              <div
+                                className={`risk-bar-fill h-full ${getRiskBarColor(incident.ai_risk_score)}`}
+                                style={{ width: `${incident.ai_risk_score}%` }}
+                              />
+                            </div>
+                            <span className={`font-mono text-sm ${getRiskScoreColor(incident.ai_risk_score)}`}>
+                              {incident.ai_risk_score}
+                            </span>
+                          </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-slate-400 text-sm">
+                      <td className="px-6 py-4 text-slate-400 text-sm font-mono">
                         {new Date(incident.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
                         <button
                           onClick={() => setSelectedIncident(incident)}
-                          className="text-teal-400 hover:text-teal-300"
+                          className="text-cyber-400 hover:text-cyber-300 transition-colors"
                         >
                           <Eye className="w-5 h-5" />
                         </button>
@@ -267,13 +288,15 @@ export default function AdminIncidents() {
 
       {/* Detail Modal */}
       {selectedIncident && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-slate-800 border-b border-slate-700 p-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">Incident Details</h3>
+        <div className="cyber-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="cyber-modal cyber-frame relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
+            <div className="sticky top-0 bg-dark-900/95 backdrop-blur-sm border-b border-[rgba(56,189,248,0.1)] p-4 flex items-center justify-between z-10">
+              <h3 className="font-display text-lg font-semibold tracking-wider text-neon-cyan">
+                INCIDENT DETAILS
+              </h3>
               <button
                 onClick={() => setSelectedIncident(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-cyber-400 transition-colors"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -282,18 +305,18 @@ export default function AdminIncidents() {
               <div>
                 <h4 className="text-xl font-bold text-white mb-2">{selectedIncident.title}</h4>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-slate-400 text-sm capitalize">
+                  <span className="text-slate-400 text-sm capitalize font-mono">
                     {selectedIncident.incident_type.replace('_', ' ')}
                   </span>
                   <span
-                    className={`text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
+                    className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
                       selectedIncident.severity
                     )}`}
                   >
                     {selectedIncident.severity}
                   </span>
                   <span
-                    className={`text-xs px-2 py-1 rounded ${
+                    className={`cyber-badge text-xs px-2 py-1 rounded ${
                       getStatusBadge(selectedIncident.status).className
                     }`}
                   >
@@ -303,18 +326,18 @@ export default function AdminIncidents() {
               </div>
 
               {/* Status Update */}
-              <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
-                <p className="text-slate-300 text-sm mb-3">Update Status</p>
+              <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
+                <p className="text-slate-300 text-sm mb-3 font-mono">Update Status</p>
                 <div className="flex gap-2">
                   {statuses.map((s) => (
                     <button
                       key={s}
                       onClick={() => updateIncidentStatus(selectedIncident.id, s)}
                       disabled={updating}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      className={`cyber-btn px-4 py-2 rounded-lg text-sm font-medium font-mono transition-all ${
                         selectedIncident.status === s
-                          ? 'bg-teal-500/20 text-teal-400 border border-teal-500'
-                          : 'bg-slate-600 text-slate-300 hover:bg-slate-500'
+                          ? 'bg-cyber-400/20 text-cyber-400 border border-cyber-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]'
+                          : 'bg-dark-800 text-slate-300 border border-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.05)] hover:text-cyber-400'
                       }`}
                     >
                       {s.replace('_', ' ').charAt(0).toUpperCase() + s.replace('_', ' ').slice(1)}
@@ -324,26 +347,26 @@ export default function AdminIncidents() {
               </div>
 
               <div>
-                <h5 className="text-sm font-medium text-slate-400 mb-2">Description</h5>
+                <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Description</h5>
                 <p className="text-slate-300 whitespace-pre-wrap">{selectedIncident.description}</p>
               </div>
 
               {selectedIncident.ai_risk_score !== null && (
-                <div className="bg-slate-700/30 border border-slate-600 rounded-lg p-4">
+                <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <Brain className="w-5 h-5 text-teal-400" />
-                    <span className="text-teal-400 font-medium">AI Insights</span>
+                    <Brain className="w-5 h-5 text-cyber-400" />
+                    <span className="text-cyber-400 font-medium font-mono">AI Insights</span>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-slate-400 text-sm mb-1">Risk Score</p>
+                      <p className="text-slate-400 text-sm font-mono mb-1">Risk Score</p>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-slate-600 rounded-full overflow-hidden">
+                        <div className="risk-bar flex-1 h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full ${
+                            className={`risk-bar-fill h-full ${
                               selectedIncident.ai_risk_score >= 60
                                 ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                : 'bg-gradient-to-r from-teal-500 to-teal-400'
+                                : 'bg-gradient-to-r from-cyber-400 to-matrix-400'
                             }`}
                             style={{ width: `${selectedIncident.ai_risk_score}%` }}
                           />
@@ -357,8 +380,8 @@ export default function AdminIncidents() {
                     </div>
                     {selectedIncident.ai_suggested_category && (
                       <div>
-                        <p className="text-slate-400 text-sm mb-1">Suggested Category</p>
-                        <p className="text-white capitalize">
+                        <p className="text-slate-400 text-sm font-mono mb-1">Suggested Category</p>
+                        <p className="text-white capitalize font-mono">
                           {selectedIncident.ai_suggested_category.replace('_', ' ')}
                         </p>
                       </div>
@@ -369,19 +392,19 @@ export default function AdminIncidents() {
 
               {selectedIncident.file_url && (
                 <div>
-                  <h5 className="text-sm font-medium text-slate-400 mb-2">Attached File</h5>
+                  <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Attached File</h5>
                   <a
                     href={selectedIncident.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-teal-400 hover:text-teal-300"
+                    className="text-cyber-400 hover:text-cyber-300 transition-colors font-mono"
                   >
                     View File
                   </a>
                 </div>
               )}
 
-              <div className="text-slate-400 text-sm">
+              <div className="text-slate-400 text-sm font-mono">
                 Submitted on {new Date(selectedIncident.created_at).toLocaleString()}
               </div>
             </div>

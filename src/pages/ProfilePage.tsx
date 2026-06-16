@@ -45,7 +45,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
       </div>
 
       {/* Profile Card */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl overflow-hidden mb-6">
+      <div className="bg-[#0d1b2a]/80 border border-[rgba(56,189,248,0.1)] rounded-xl overflow-hidden mb-6">
         <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-6">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
@@ -81,7 +81,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="w-full bg-slate-700/50 border border-slate-600 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
+                className="w-full bg-[rgba(10,22,40,0.7)] border border-[rgba(56,189,248,0.1)] rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-[rgba(56,189,248,0.4)] focus:ring-1 focus:ring-[rgba(56,189,248,0.2)]"
                 placeholder="Your full name"
               />
             </div>
@@ -95,7 +95,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
                 type="email"
                 value={profile?.email || ''}
                 disabled
-                className="w-full bg-slate-700/30 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
+                className="w-full bg-slate-700/30 border border-[rgba(56,189,248,0.1)] rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
               />
             </div>
             <p className="text-slate-500 text-xs mt-1">Email cannot be changed</p>
@@ -109,7 +109,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
                 type="text"
                 value={profile?.role?.charAt(0).toUpperCase() + profile?.role?.slice(1) || ''}
                 disabled
-                className="w-full bg-slate-700/30 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
+                className="w-full bg-slate-700/30 border border-[rgba(56,189,248,0.1)] rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
               />
             </div>
           </div>
@@ -126,7 +126,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
                   day: 'numeric',
                 }) : ''}
                 disabled
-                className="w-full bg-slate-700/30 border border-slate-700 rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
+                className="w-full bg-slate-700/30 border border-[rgba(56,189,248,0.1)] rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
               />
             </div>
           </div>
@@ -135,7 +135,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
             <button
               type="submit"
               disabled={loading || fullName === profile?.full_name}
-              className="bg-teal-500 hover:bg-teal-600 disabled:bg-teal-500/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
+              className="bg-[#0ea5e9] hover:bg-[#0284c7] disabled:bg-[#0ea5e9]/50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center gap-2"
             >
               <Save className="w-5 h-5" />
               {loading ? 'Saving...' : 'Save Changes'}
@@ -145,15 +145,15 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
       </div>
 
       {/* Account Info */}
-      <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
+      <div className="bg-[#0d1b2a]/80 border border-[rgba(56,189,248,0.1)] rounded-xl p-6">
         <h3 className="text-lg font-semibold text-white mb-4">Account Information</h3>
         <div className="space-y-4">
-          <div className="flex items-center justify-between py-3 border-b border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-[rgba(56,189,248,0.1)]">
             <span className="text-slate-400">User ID</span>
             <span className="text-slate-300 font-mono text-sm">{profile?.id?.slice(0, 8)}...{profile?.id?.slice(-4)}</span>
           </div>
           {isAdmin && (
-            <div className="flex items-center justify-between py-3 border-b border-slate-700">
+            <div className="flex items-center justify-between py-3 border-b border-[rgba(56,189,248,0.1)]">
               <span className="text-slate-400">Role Permissions</span>
               <span className="text-green-400">Full Admin Access</span>
             </div>

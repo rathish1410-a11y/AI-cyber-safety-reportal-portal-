@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════
+   CYBERSECURITY THEME — ELECTRIC BLUE PALETTE
+   Inspired by: Deep navy + electric blue HUD
+   ═══════════════════════════════════════════ */
+:root {
+  --cyber-blue: #38bdf8;
+  --cyber-blue-mid: #0ea5e9;
+  --cyber-blue-deep: #0284c7;
+  --cyber-blue-dim: rgba(56, 189, 248, 0.15);
+  --cyber-glow: rgba(56, 189, 248, 0.35);
+  --cyber-green: #34d399;
+  --cyber-green-dim: rgba(52, 211, 153, 0.15);
+  --cyber-red: #ef4444;
+  --cyber-red-dim: rgba(239, 68, 68, 0.15);
+  --cyber-amber: #f59e0b;
+  --cyber-amber-dim: rgba(245, 158, 11, 0.15);
+  --dark-bg: #060e1a;
+  --dark-surface: #0a1628;
+  --dark-card: #0d1b2a;
+  --dark-card-hover: #112240;
+  --dark-border: rgba(56, 189, 248, 0.08);
+  --glass-bg: rgba(10, 22, 40, 0.75);
+  --glass-border: rgba(56, 189, 248, 0.1);
+  --circuit-line: rgba(56, 189, 248, 0.06);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -9,37 +35,44 @@
 
   body {
     @apply antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    background-color: var(--dark-bg);
+    color: #cbd5e1;
   }
 
-  /* Custom scrollbar */
+  /* ═══ CYBER SCROLLBAR ═══ */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 5px;
+    height: 5px;
   }
 
   ::-webkit-scrollbar-track {
-    @apply bg-slate-800;
+    background: var(--dark-bg);
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-600 rounded-full;
+    background: linear-gradient(180deg, var(--cyber-blue-mid) 0%, rgba(56, 189, 248, 0.2) 100%);
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-slate-500;
+    background: var(--cyber-blue);
+  }
+
+  /* ═══ SELECTION ═══ */
+  ::selection {
+    background: rgba(56, 189, 248, 0.2);
+    color: #fff;
   }
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
+/* ═══════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════ */
 @keyframes pulse-ring {
   0% { transform: scale(0.8); opacity: 0.8; }
-  80% { transform: scale(1.6); opacity: 0; }
-  100% { transform: scale(1.6); opacity: 0; }
+  80% { transform: scale(2); opacity: 0; }
+  100% { transform: scale(2); opacity: 0; }
 }
 
 @keyframes scan-line {
@@ -52,6 +85,62 @@
   100% { background-position: 40px 40px; }
 }
 
+@keyframes glow-breathe {
+  0%, 100% { 
+    box-shadow: 0 0 8px rgba(56, 189, 248, 0.1), 0 0 16px rgba(56, 189, 248, 0.03);
+    border-color: rgba(56, 189, 248, 0.12);
+  }
+  50% { 
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.25), 0 0 32px rgba(56, 189, 248, 0.06);
+    border-color: rgba(56, 189, 248, 0.25);
+  }
+}
+
+@keyframes neon-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  93% { opacity: 0.8; }
+  94% { opacity: 1; }
+  96% { opacity: 0.9; }
+  97% { opacity: 1; }
+}
+
+@keyframes data-stream {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 0% 100%; }
+}
+
+@keyframes text-glow {
+  0%, 100% { text-shadow: 0 0 4px rgba(56, 189, 248, 0.3); }
+  50% { text-shadow: 0 0 12px rgba(56, 189, 248, 0.6), 0 0 24px rgba(56, 189, 248, 0.15); }
+}
+
+@keyframes border-glow-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes circuit-pulse {
+  0%, 100% { opacity: 0.04; }
+  50% { opacity: 0.08; }
+}
+
+@keyframes ring-rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes hud-scan {
+  0% { transform: scaleX(0); opacity: 0; }
+  50% { transform: scaleX(1); opacity: 1; }
+  100% { transform: scaleX(0); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════ */
+
 .animate-pulse-ring {
   animation: pulse-ring 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -60,10 +149,439 @@
   animation: scan-line 4s linear infinite;
 }
 
+/* ═══ CIRCUIT BOARD GRID BACKGROUND ═══ */
 .cyber-grid-bg {
   background-image:
-    linear-gradient(rgba(20, 184, 166, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(20, 184, 166, 0.08) 1px, transparent 1px);
-  background-size: 40px 40px;
-  animation: grid-move 6s linear infinite;
+    linear-gradient(var(--circuit-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--circuit-line) 1px, transparent 1px);
+  background-size: 48px 48px;
+  animation: grid-move 10s linear infinite;
+}
+
+/* ═══ CIRCUIT PATTERN OVERLAY ═══ */
+.circuit-bg {
+  position: relative;
+}
+.circuit-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(ellipse at 15% 50%, rgba(56, 189, 248, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 25%, rgba(14, 165, 233, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 85%, rgba(56, 189, 248, 0.02) 0%, transparent 50%);
+  animation: circuit-pulse 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══ GLASSMORPHISM CYBER CARD ═══ */
+.cyber-card {
+  background: var(--dark-card);
+  border: 1px solid rgba(56, 189, 248, 0.08);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cyber-card:hover {
+  border-color: rgba(56, 189, 248, 0.18);
+  background: var(--dark-card-hover);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.04), 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Card scan-line on hover */
+.cyber-card::after {
+  content: '';
+  position: absolute;
+  top: -100%;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    transparent 0%,
+    rgba(56, 189, 248, 0.02) 50%,
+    transparent 100%
+  );
+  transition: top 0.6s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyber-card:hover::after {
+  top: 100%;
+}
+
+/* ═══ NEON GLOW BORDER ═══ */
+.neon-border {
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  animation: glow-breathe 5s ease-in-out infinite;
+}
+
+/* ═══ CORNER BRACKETS (HUD Frame) ═══ */
+.cyber-frame {
+  position: relative;
+}
+
+.cyber-frame::before,
+.cyber-frame::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-color: var(--cyber-blue-mid);
+  opacity: 0.25;
+  z-index: 2;
+  transition: opacity 0.3s, border-color 0.3s;
+}
+
+.cyber-frame::before {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid;
+  border-left: 2px solid;
+}
+
+.cyber-frame::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid;
+  border-right: 2px solid;
+}
+
+.cyber-frame:hover::before,
+.cyber-frame:hover::after {
+  opacity: 0.6;
+  border-color: var(--cyber-blue);
+}
+
+/* ═══ TERMINAL TEXT ═══ */
+.terminal-text {
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
+.terminal-cursor::after {
+  content: '▊';
+  animation: terminal-blink 1s step-end infinite;
+  color: var(--cyber-blue);
+  margin-left: 2px;
+}
+
+@keyframes terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ═══ NEON TEXT GLOW ═══ */
+.text-glow-blue {
+  animation: text-glow 3s ease-in-out infinite;
+}
+
+.text-neon-blue {
+  color: var(--cyber-blue);
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.4), 0 0 16px rgba(56, 189, 248, 0.15);
+}
+
+.text-neon-green {
+  color: var(--cyber-green);
+  text-shadow: 0 0 8px rgba(52, 211, 153, 0.4), 0 0 16px rgba(52, 211, 153, 0.15);
+}
+
+.text-neon-red {
+  color: var(--cyber-red);
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.4), 0 0 16px rgba(239, 68, 68, 0.15);
+}
+
+/* Keep old class names as aliases for compatibility */
+.text-neon-cyan { 
+  color: var(--cyber-blue);
+  text-shadow: 0 0 8px rgba(56, 189, 248, 0.4), 0 0 16px rgba(56, 189, 248, 0.15);
+}
+
+/* ═══ HUD RING ELEMENT ═══ */
+.hud-ring {
+  position: relative;
+}
+.hud-ring::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  border-radius: 50%;
+  animation: ring-rotate 12s linear infinite;
+  border-top-color: var(--cyber-blue);
+}
+
+/* ═══ STAT CARD GLOW VARIANTS ═══ */
+.glow-blue {
+  border-left: 2px solid rgba(56, 189, 248, 0.5);
+  box-shadow: inset 3px 0 20px rgba(56, 189, 248, 0.04);
+}
+
+/* Keep old name for compat */
+.glow-cyan {
+  border-left: 2px solid rgba(56, 189, 248, 0.5);
+  box-shadow: inset 3px 0 20px rgba(56, 189, 248, 0.04);
+}
+
+.glow-green {
+  border-left: 2px solid rgba(52, 211, 153, 0.5);
+  box-shadow: inset 3px 0 20px rgba(52, 211, 153, 0.04);
+}
+
+.glow-amber {
+  border-left: 2px solid rgba(245, 158, 11, 0.5);
+  box-shadow: inset 3px 0 20px rgba(245, 158, 11, 0.04);
+}
+
+.glow-red {
+  border-left: 2px solid rgba(239, 68, 68, 0.5);
+  box-shadow: inset 3px 0 20px rgba(239, 68, 68, 0.04);
+}
+
+.glow-purple {
+  border-left: 2px solid rgba(168, 85, 247, 0.5);
+  box-shadow: inset 3px 0 20px rgba(168, 85, 247, 0.04);
+}
+
+/* ═══ SCANLINE OVERLAY ═══ */
+.scanline-overlay {
+  position: relative;
+}
+
+.scanline-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(56, 189, 248, 0.005) 3px,
+    rgba(56, 189, 248, 0.005) 6px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ═══ LIVE INDICATOR ═══ */
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.live-dot::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  background: inherit;
+}
+
+/* ═══ GLOW BUTTONS ═══ */
+.cyber-btn {
+  position: relative;
+  background: rgba(56, 189, 248, 0.06);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  color: var(--cyber-blue);
+  transition: all 0.3s;
+  overflow: hidden;
+}
+
+.cyber-btn:hover {
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 24px rgba(56, 189, 248, 0.12), inset 0 0 24px rgba(56, 189, 248, 0.03);
+}
+
+.cyber-btn-solid {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #ffffff;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+.cyber-btn-solid:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #0ea5e9 100%);
+  box-shadow: 0 0 30px rgba(56, 189, 248, 0.25), 0 0 60px rgba(56, 189, 248, 0.08);
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.cyber-btn-danger {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--cyber-red);
+  transition: all 0.3s;
+}
+
+.cyber-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.12);
+}
+
+/* ═══ CYBER INPUT ═══ */
+.cyber-input {
+  background: rgba(10, 22, 40, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  transition: all 0.3s;
+}
+
+.cyber-input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+}
+
+.cyber-input:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.08), inset 0 0 16px rgba(56, 189, 248, 0.02);
+  background: rgba(10, 22, 40, 0.95);
+}
+
+/* ═══ CYBER SELECT ═══ */
+.cyber-select {
+  background: rgba(10, 22, 40, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.1);
+  color: #e2e8f0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.875rem;
+  transition: all 0.3s;
+}
+
+.cyber-select:focus {
+  outline: none;
+  border-color: rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.08);
+}
+
+/* ═══ TABLE CYBER STYLE ═══ */
+.cyber-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cyber-blue);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+  padding: 14px 20px;
+  background: rgba(56, 189, 248, 0.02);
+}
+
+.cyber-table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.04);
+  font-size: 0.875rem;
+}
+
+.cyber-table tr {
+  transition: all 0.2s;
+}
+
+.cyber-table tbody tr:hover {
+  background: rgba(56, 189, 248, 0.03);
+}
+
+/* ═══ BADGE ═══ */
+.cyber-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ═══ MODAL ═══ */
+.cyber-modal-overlay {
+  background: rgba(6, 14, 26, 0.8);
+  backdrop-filter: blur(8px);
+}
+
+.cyber-modal {
+  background: var(--dark-card);
+  border: 1px solid rgba(56, 189, 248, 0.12);
+  box-shadow: 0 0 50px rgba(56, 189, 248, 0.06), 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* ═══ RISK BAR ═══ */
+.risk-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(56, 189, 248, 0.08);
+  overflow: hidden;
+}
+
+.risk-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.risk-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2));
+  animation: neon-flicker 3s ease-in-out infinite;
+}
+
+/* ═══ DATA STREAM LINE ═══ */
+.data-stream-line {
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(56, 189, 248, 0.08) 50%,
+    transparent 100%
+  );
+  background-size: 100% 40px;
+  animation: data-stream 3s linear infinite;
+}
+
+/* ═══ CIRCUIT LINE CONNECTOR ═══ */
+.circuit-line {
+  position: relative;
+}
+.circuit-line::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  width: 1px;
+  height: 12px;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.2) 0%, transparent 100%);
+}
+
+/* ═══ HEX BG (alias) ═══ */
+.hex-bg {
+  position: relative;
+}
+.hex-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(ellipse at 20% 50%, rgba(56, 189, 248, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(14, 165, 233, 0.02) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(56, 189, 248, 0.015) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
 }

@@ -22,12 +22,17 @@ export default function AdminAlerts() {
   }, []);
 
   async function fetchAlerts() {
-    const { data } = await supabase
-      .from('alerts')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) setAlerts(data);
-    setLoading(false);
+    try {
+      const { data } = await supabase
+        .from('alerts')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setAlerts(data || []);
+    } catch {
+      setAlerts([]);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const resetForm = () => {
@@ -125,182 +130,220 @@ export default function AdminAlerts() {
     return colors[severity as keyof typeof colors] || colors.medium;
   };
 
+  const getSeverityGlow = (severity: string) => {
+    const glows: Record<string, string> = {
+      low: 'glow-blue',
+      medium: 'glow-amber',
+      high: 'glow-red',
+      critical: 'glow-red',
+    };
+    return glows[severity] || 'glow-blue';
+  };
+
   const severities: Severity[] = ['low', 'medium', 'high', 'critical'];
 
   return (
-    <div className="p-6 lg:p-8">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white mb-2">Safety Alerts</h1>
-          <p className="text-slate-400">Create and manage public safety advisories</p>
-        </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="bg-teal-500 hover:bg-teal-600 text-white px-4 py-2.5 rounded-lg font-medium flex items-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Create Alert
-        </button>
-      </div>
+    <div className="relative p-6 lg:p-8 min-h-screen">
+      {/* Background effects */}
+      <div className="cyber-grid-bg fixed inset-0 pointer-events-none" />
+      <div className="scanline-overlay fixed inset-0 pointer-events-none" />
 
-      {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60">
-          <div className="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg">
-            <div className="border-b border-slate-700 p-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">
-                {editingAlert ? 'Edit Alert' : 'Create New Alert'}
-              </h3>
-              <button onClick={resetForm} className="text-slate-400 hover:text-white">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Title</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  required
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500"
-                  placeholder="Alert title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Severity</label>
-                <div className="grid grid-cols-4 gap-2">
-                  {severities.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, severity: s })}
-                      className={`p-2 rounded-lg border text-center capitalize ${
-                        formData.severity === s
-                          ? 'bg-teal-500/10 border-teal-500 text-teal-400'
-                          : 'bg-slate-700/30 border-slate-600 text-slate-300 hover:border-slate-500'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Content</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  required
-                  rows={5}
-                  className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 resize-none"
-                  placeholder="Alert content..."
-                />
-              </div>
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 rounded-lg text-slate-300 hover:text-white"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-teal-500 hover:bg-teal-600 disabled:bg-teal-500/50 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
-                >
-                  <Save className="w-5 h-5" />
-                  {saving ? 'Saving...' : editingAlert ? 'Update Alert' : 'Create Alert'}
-                </button>
-              </div>
-            </form>
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl font-bold text-white mb-2 font-display tracking-wider">
+              SECURITY <span className="text-neon-cyan">ALERTS</span>
+            </h1>
+            <p className="terminal-text text-slate-400 text-sm">
+              &gt; Create and manage public safety advisories_
+            </p>
           </div>
-        </div>
-      )}
-
-      {loading ? (
-        <div className="text-center py-12 text-slate-400">Loading alerts...</div>
-      ) : alerts.length === 0 ? (
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-12 text-center">
-          <AlertTriangle className="w-12 h-12 text-slate-600 mx-auto mb-4" />
-          <p className="text-slate-400 mb-4">No alerts created yet</p>
           <button
             onClick={() => setShowForm(true)}
-            className="text-teal-400 hover:text-teal-300 font-medium"
+            className="cyber-btn-solid px-5 py-2.5 font-medium flex items-center gap-2 shadow-[0_0_15px_rgba(56,189,248,0.3)]"
           >
-            Create your first alert
+            <Plus className="w-5 h-5" />
+            Create Alert
           </button>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {alerts.map((alert) => (
-            <div
-              key={alert.id}
-              className={`bg-slate-800/50 border rounded-xl p-6 ${
-                alert.is_active ? 'border-slate-700' : 'border-slate-700/50 opacity-60'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      alert.is_active ? 'bg-teal-500/10' : 'bg-slate-700/30'
-                    }`}
-                  >
-                    <AlertTriangle
-                      className={`w-5 h-5 ${alert.is_active ? 'text-teal-400' : 'text-slate-500'}`}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <h3 className="text-lg font-semibold text-white">{alert.title}</h3>
-                      <span
-                        className={`text-xs px-2 py-1 rounded border capitalize ${getSeverityBadge(
-                          alert.severity
-                        )}`}
+
+        {/* Form Modal */}
+        {showForm && (
+          <div className="cyber-modal-overlay">
+            <div className="cyber-modal cyber-frame w-full max-w-lg">
+              <div className="border-b border-[rgba(56,189,248,0.15)] p-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-white font-mono">
+                  {editingAlert ? '[ EDIT ALERT ]' : '[ NEW ALERT ]'}
+                </h3>
+                <button onClick={resetForm} className="text-slate-400 hover:text-cyber-400 transition-colors">
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2 font-mono tracking-wide">
+                    TITLE
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    required
+                    className="cyber-input w-full"
+                    placeholder="Alert title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2 font-mono tracking-wide">
+                    SEVERITY
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {severities.map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, severity: s })}
+                        className={`p-2 rounded border text-center capitalize font-mono text-sm transition-all duration-200 ${
+                          formData.severity === s
+                            ? 'bg-[rgba(56,189,248,0.1)] border-cyber-400 text-cyber-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]'
+                            : 'bg-dark-900/50 border-[rgba(56,189,248,0.1)] text-slate-400 hover:border-[rgba(56,189,248,0.3)] hover:text-slate-300'
+                        }`}
                       >
-                        {alert.severity}
-                      </span>
-                      {!alert.is_active && (
-                        <span className="text-xs px-2 py-1 rounded bg-slate-600 text-slate-300">Inactive</span>
-                      )}
-                    </div>
-                    <p className="text-slate-400 text-sm mb-2">{alert.content}</p>
-                    <p className="text-slate-500 text-xs">
-                      {new Date(alert.created_at).toLocaleDateString()}
-                    </p>
+                        {s}
+                      </button>
+                    ))}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2 font-mono tracking-wide">
+                    CONTENT
+                  </label>
+                  <textarea
+                    value={formData.content}
+                    onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                    required
+                    rows={5}
+                    className="cyber-input w-full resize-none"
+                    placeholder="Alert content..."
+                  />
+                </div>
+                <div className="flex justify-end gap-3">
                   <button
-                    onClick={() => editAlert(alert)}
-                    className="text-slate-400 hover:text-teal-400 p-2 hover:bg-slate-700/50 rounded-lg transition-colors"
+                    type="button"
+                    onClick={resetForm}
+                    className="cyber-btn px-4 py-2"
                   >
-                    <Edit className="w-5 h-5" />
+                    Cancel
                   </button>
                   <button
-                    onClick={() => toggleAlertStatus(alert.id, alert.is_active)}
-                    className={`text-sm px-3 py-1.5 rounded-lg ${
-                      alert.is_active
-                        ? 'bg-yellow-500/10 text-yellow-300'
-                        : 'bg-green-500/10 text-green-300'
-                    }`}
+                    type="submit"
+                    disabled={saving}
+                    className="cyber-btn-solid px-6 py-2 font-medium flex items-center gap-2 disabled:opacity-50"
                   >
-                    {alert.is_active ? 'Deactivate' : 'Activate'}
+                    <Save className="w-5 h-5" />
+                    {saving ? 'Saving...' : editingAlert ? 'Update Alert' : 'Create Alert'}
                   </button>
-                  <button
-                    onClick={() => deleteAlert(alert.id)}
-                    className="text-red-400 hover:text-red-300 p-2 hover:bg-red-500/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Alerts List */}
+        {loading ? (
+          <div className="text-center py-12 terminal-text text-neon-cyan text-lg">
+            &gt; Loading security alerts<span className="terminal-cursor" />
+          </div>
+        ) : alerts.length === 0 ? (
+          <div className="cyber-card cyber-frame rounded-xl p-12 text-center">
+            <AlertTriangle className="w-12 h-12 text-cyber-400/40 mx-auto mb-4" />
+            <p className="text-slate-400 mb-4 terminal-text">&gt; No alerts created yet_</p>
+            <button
+              onClick={() => setShowForm(true)}
+              className="text-cyber-400 hover:text-cyber-300 font-medium font-mono tracking-wide transition-colors"
+            >
+              [ Create your first alert ]
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {alerts.map((alert) => (
+              <div
+                key={alert.id}
+                className={`cyber-card rounded-xl p-6 ${getSeverityGlow(alert.severity)} ${
+                  alert.is_active
+                    ? 'neon-border'
+                    : 'opacity-50 border border-[rgba(56,189,248,0.05)]'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        alert.is_active
+                          ? 'bg-[rgba(56,189,248,0.1)] border border-[rgba(56,189,248,0.2)]'
+                          : 'bg-dark-900/50 border border-[rgba(56,189,248,0.05)]'
+                      }`}
+                    >
+                      <AlertTriangle
+                        className={`w-5 h-5 ${alert.is_active ? 'text-cyber-400' : 'text-slate-600'}`}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <h3 className="text-lg font-semibold text-white font-mono">{alert.title}</h3>
+                        <span
+                          className={`cyber-badge text-xs px-2 py-1 rounded border capitalize ${getSeverityBadge(
+                            alert.severity
+                          )}`}
+                        >
+                          {alert.severity}
+                        </span>
+                        {!alert.is_active && (
+                          <span className="cyber-badge text-xs px-2 py-1 rounded bg-slate-600/30 text-slate-500 border border-slate-600/50">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-slate-400 text-sm mb-2">{alert.content}</p>
+                      <p className="text-slate-600 text-xs font-mono">
+                        {new Date(alert.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => editAlert(alert)}
+                      className="cyber-btn p-2 rounded-lg transition-all duration-200"
+                      title="Edit"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => toggleAlertStatus(alert.id, alert.is_active)}
+                      className={`text-sm px-3 py-1.5 rounded-lg font-mono border transition-all duration-200 ${
+                        alert.is_active
+                          ? 'bg-[rgba(255,170,0,0.1)] text-[#ffaa00] border-[rgba(255,170,0,0.3)] hover:bg-[rgba(255,170,0,0.2)] shadow-[0_0_8px_rgba(255,170,0,0.1)]'
+                          : 'bg-[rgba(52,211,153,0.1)] text-matrix-400 border-[rgba(52,211,153,0.3)] hover:bg-[rgba(52,211,153,0.2)] shadow-[0_0_8px_rgba(52,211,153,0.1)]'
+                      }`}
+                    >
+                      {alert.is_active ? 'Deactivate' : 'Activate'}
+                    </button>
+                    <button
+                      onClick={() => deleteAlert(alert.id)}
+                      className="cyber-btn-danger p-2 rounded-lg transition-all duration-200"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
