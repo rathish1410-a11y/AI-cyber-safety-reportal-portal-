@@ -33,6 +33,10 @@ export default function ReportIncident() {
   const [incidentType, setIncidentType] = useState<IncidentType>('other');
   const [severity, setSeverity] = useState<Severity>('medium');
   const [description, setDescription] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [platform, setPlatform] = useState('');
+  const [incidentDate, setIncidentDate] = useState('');
+  const [financialLoss, setFinancialLoss] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -71,6 +75,10 @@ export default function ReportIncident() {
         incident_type: incidentType,
         severity,
         description,
+        phone_number: phoneNumber || null,
+        platform: platform || null,
+        incident_date: incidentDate || null,
+        financial_loss: financialLoss || null,
         file_url: null,
         ai_risk_score: riskScore,
         ai_suggested_category: suggestedCategory,
@@ -205,6 +213,62 @@ export default function ReportIncident() {
                 <p className="text-slate-500 text-sm font-mono">{level.description}</p>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Contact Info: Phone Number */}
+        <div className="cyber-card cyber-frame p-6">
+          <label className="block text-sm font-mono font-medium text-cyber-400 mb-2 uppercase tracking-wider">
+            Contact Phone Number
+          </label>
+          <input
+            type="tel"
+            value={phoneNumber}
+            onChange={(e) => setPhoneNumber(e.target.value)}
+            placeholder="e.g. +91 9876543210 (Optional)"
+            className="cyber-input w-full"
+          />
+        </div>
+
+        {/* Platform of Incident */}
+        <div className="cyber-card cyber-frame p-6">
+          <label className="block text-sm font-mono font-medium text-cyber-400 mb-2 uppercase tracking-wider">
+            Platform / Medium
+          </label>
+          <input
+            type="text"
+            value={platform}
+            onChange={(e) => setPlatform(e.target.value)}
+            placeholder="e.g. WhatsApp, Facebook, Bank Website (Optional)"
+            className="cyber-input w-full"
+          />
+        </div>
+
+        {/* Incident Date & Financial Loss */}
+        <div className="grid sm:grid-cols-2 gap-8">
+          <div className="cyber-card cyber-frame p-6">
+            <label className="block text-sm font-mono font-medium text-cyber-400 mb-2 uppercase tracking-wider">
+              Date of Incident
+            </label>
+            <input
+              type="date"
+              value={incidentDate}
+              onChange={(e) => setIncidentDate(e.target.value)}
+              className="cyber-input w-full"
+            />
+          </div>
+
+          <div className="cyber-card cyber-frame p-6">
+            <label className="block text-sm font-mono font-medium text-cyber-400 mb-2 uppercase tracking-wider">
+              Financial Loss Amount
+            </label>
+            <input
+              type="text"
+              value={financialLoss}
+              onChange={(e) => setFinancialLoss(e.target.value)}
+              placeholder="e.g. ₹ 50,000 (Optional)"
+              className="cyber-input w-full"
+            />
           </div>
         </div>
 

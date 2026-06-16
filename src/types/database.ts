@@ -20,6 +20,10 @@ export interface Incident {
   incident_type: IncidentType;
   severity: Severity;
   description: string;
+  phone_number: string | null;
+  platform: string | null;
+  incident_date: string | null;
+  financial_loss: string | null;
   file_url: string | null;
   status: IncidentStatus;
   ai_risk_score: number | null;
