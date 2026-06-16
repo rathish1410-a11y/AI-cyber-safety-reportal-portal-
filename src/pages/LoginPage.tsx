@@ -127,6 +127,11 @@ export default function LoginPage() {
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <div className="mt-2 text-right">
+                <Link to="/forgot-password" className="text-xs font-mono transition-colors hover:underline" style={{ color: 'rgba(56,189,248,0.5)' }}>
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
             {/* Role switcher — only visible for the super account */}

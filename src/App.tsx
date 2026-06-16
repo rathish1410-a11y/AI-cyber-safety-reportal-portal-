@@ -6,6 +6,7 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import AlertsPage from './pages/AlertsPage';
 import ProfilePage from './pages/ProfilePage';
 
@@ -49,6 +50,7 @@ function AppRoutes() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
 
         {/* Citizen Routes */}
