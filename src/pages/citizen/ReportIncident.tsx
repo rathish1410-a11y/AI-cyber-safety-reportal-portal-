@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FileWarning, AlertCircle, CheckCircle, Upload, Brain, Shield } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, Brain, Shield } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { IncidentType, Severity } from '../../types/database';
@@ -178,7 +178,7 @@ export default function ReportIncident() {
             Severity Level
           </label>
           <div className="space-y-3">
-            {severityLevels.map((level, levelIdx) => (
+            {severityLevels.map((level) => (
               <button
                 key={level.value}
                 type="button"
