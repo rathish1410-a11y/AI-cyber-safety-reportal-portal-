@@ -138,15 +138,32 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
     <>
       {/* Floating Button */}
       {!inline && !open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
-          style={{ background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', boxShadow: '0 0 30px rgba(56,189,248,0.4)' }}
-          title="Open CyberBot AI Assistant"
-        >
-          <MessageSquare className="w-6 h-6 text-white" />
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-[#060e1a] animate-pulse" />
-        </button>
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+          {/* Attention-grabbing text bubble */}
+          <div className="bg-[#0a1628] border border-[rgba(56,189,248,0.3)] rounded-2xl rounded-br-sm px-4 py-3 shadow-[0_0_20px_rgba(56,189,248,0.2)] animate-bounce relative">
+            <p className="text-white font-medium text-sm">Hi! I'm your AI Assistant. 👋</p>
+            <p className="text-slate-400 text-xs font-mono mt-1">Ask me about cyber safety.</p>
+          </div>
+          
+          <button
+            onClick={() => setOpen(true)}
+            className="rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 hover:scale-105 group pr-6 pl-4 py-3.5 gap-3"
+            style={{ 
+              background: 'linear-gradient(135deg, #0ea5e9, #0284c7)', 
+              boxShadow: '0 0 40px rgba(56,189,248,0.5), inset 0 0 15px rgba(255,255,255,0.2)' 
+            }}
+            title="Open CyberBot AI Assistant"
+          >
+            <div className="relative">
+              <Bot className="w-8 h-8 text-white drop-shadow-md group-hover:rotate-12 transition-transform duration-300" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-green-400 border-2 border-[#0284c7] animate-pulse" />
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-white font-bold font-display tracking-wider text-base">Ask AI Assistant</span>
+              <span className="text-blue-100 font-mono text-[10px] uppercase tracking-widest">We are online</span>
+            </div>
+          </button>
+        </div>
       )}
 
       {/* Chat Window */}
