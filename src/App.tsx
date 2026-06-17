@@ -18,6 +18,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import CitizenOverview from './pages/citizen/CitizenOverview';
 import ReportIncident from './pages/citizen/ReportIncident';
 import MyIncidents from './pages/citizen/MyIncidents';
+import AIAssistantPage from './pages/citizen/AIAssistantPage';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -65,6 +66,7 @@ function AppRoutes() {
           <Route index element={<CitizenOverview />} />
           <Route path="report" element={<ReportIncident />} />
           <Route path="incidents" element={<MyIncidents />} />
+          <Route path="ai-assistant" element={<AIAssistantPage />} />
           <Route path="phishing-detector" element={<PhishingDetector />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>

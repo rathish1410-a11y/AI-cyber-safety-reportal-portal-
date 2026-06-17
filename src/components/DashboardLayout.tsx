@@ -15,6 +15,7 @@ import {
   Zap,
   Lock,
   ScanSearch,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import CyberBot from './CyberBot';
@@ -30,6 +31,7 @@ export default function DashboardLayout() {
 
   const citizenLinks = [
     { to: '/dashboard', icon: Home, label: 'Overview' },
+    { to: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', badge: 'NEW' },
     { to: '/dashboard/report', icon: FileWarning, label: 'Report Incident' },
     { to: '/dashboard/incidents', icon: FileWarning, label: 'My Reports' },
     { to: '/dashboard/phishing-detector', icon: ScanSearch, label: 'Phishing Detector', badge: 'AI' },
@@ -41,6 +43,7 @@ export default function DashboardLayout() {
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/incidents', icon: FileWarning, label: 'All Incidents' },
     { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },
+    { to: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant', badge: 'NEW' },
     { to: '/admin/alerts', icon: AlertTriangle, label: 'Manage Alerts' },
     { to: '/admin/phishing-detector', icon: ScanSearch, label: 'Phishing Detector', badge: 'AI' },
     { to: '/admin/profile', icon: User, label: 'Profile' },

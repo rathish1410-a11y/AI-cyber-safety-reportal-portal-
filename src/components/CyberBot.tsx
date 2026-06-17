@@ -44,9 +44,9 @@ const QUICK_QUESTIONS = [
   { emoji: '🛡️', label: 'Secure accounts', q: 'How can I secure my online accounts and prevent hacking?' },
 ];
 
-export default function CyberBot() {
+export default function CyberBot({ inline = false }: { inline?: boolean }) {
   const { profile } = useAuth();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(inline ? true : false);
   const [minimized, setMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -137,7 +137,7 @@ export default function CyberBot() {
   return (
     <>
       {/* Floating Button */}
-      {!open && (
+      {!inline && !open && (
         <button
           onClick={() => setOpen(true)}
           className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110"
@@ -150,10 +150,10 @@ export default function CyberBot() {
       )}
 
       {/* Chat Window */}
-      {open && (
+      {(open || inline) && (
         <div
-          className="fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl"
-          style={{
+          className={inline ? "flex flex-col h-full w-full bg-[#0a1628]" : "fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl"}
+          style={inline ? {} : {
             width: '370px',
             height: minimized ? 'auto' : '540px',
             background: '#0a1628',
@@ -177,12 +177,16 @@ export default function CyberBot() {
               </div>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => setMinimized(!minimized)} className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors">
-                {minimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
-              </button>
-              <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors">
-                <X className="w-4 h-4" />
-              </button>
+              {!inline && (
+                <>
+                  <button onClick={() => setMinimized(!minimized)} className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors">
+                    {minimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                  </button>
+                  <button onClick={() => setOpen(false)} className="p-1.5 rounded-lg text-slate-500 hover:text-white transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </>
+              )}
             </div>
           </div>
 

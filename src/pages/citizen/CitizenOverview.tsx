@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileWarning, Clock, CheckCircle, AlertTriangle, Activity, ShieldCheck } from 'lucide-react';
+import { FileWarning, Clock, CheckCircle, AlertTriangle, Activity, ShieldCheck, Bot } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Incident, IncidentStatus } from '../../types/database';
@@ -153,20 +153,42 @@ export default function CitizenOverview() {
         ))}
       </div>
 
-      {/* Quick Actions - Report Now CTA */}
-      <div className="cyber-card neon-border p-6 mb-8 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-cyber-400/5 via-transparent to-matrix-400/5 pointer-events-none"></div>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div>
-            <h2 className="text-xl font-bold text-white mb-1 font-display tracking-wide">Report a New Incident</h2>
-            <p className="text-slate-400 terminal-text text-sm">Submit a cyber incident report quickly and securely</p>
+      {/* Quick Actions */}
+      <div className="grid md:grid-cols-2 gap-4 mb-8">
+        {/* Ask AI CTA */}
+        <div className="cyber-card p-6 relative overflow-hidden" style={{ borderColor: 'rgba(56,189,248,0.4)', boxShadow: '0 0 20px rgba(56,189,248,0.1)' }}>
+          <div className="absolute inset-0 bg-gradient-to-br from-cyber-400/10 to-transparent pointer-events-none"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-2">
+              <Bot className="w-6 h-6 text-cyber-400 animate-pulse" />
+              <h2 className="text-xl font-bold text-white font-display tracking-wide">Talk to AI Assistant</h2>
+            </div>
+            <p className="text-slate-400 terminal-text text-sm mb-5">Get instant guidance on cyber threats, fraud recovery, and reporting steps.</p>
+            <Link
+              to="/dashboard/ai-assistant"
+              className="cyber-btn px-6 py-2.5 rounded-lg inline-flex items-center gap-2 font-semibold tracking-wide uppercase text-sm w-full justify-center md:w-auto"
+            >
+              Start Chat
+            </Link>
           </div>
-          <Link
-            to="/dashboard/report"
-            className="cyber-btn-solid px-6 py-3 rounded-lg inline-block text-center font-semibold tracking-wide uppercase text-sm"
-          >
-            Report Now
-          </Link>
+        </div>
+
+        {/* Report Now CTA */}
+        <div className="cyber-card neon-border p-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-matrix-400/5 to-transparent pointer-events-none"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-2">
+              <FileWarning className="w-6 h-6 text-matrix-400" />
+              <h2 className="text-xl font-bold text-white font-display tracking-wide">Report Incident</h2>
+            </div>
+            <p className="text-slate-400 terminal-text text-sm mb-5">Officially submit a cyber incident report to the authorities securely.</p>
+            <Link
+              to="/dashboard/report"
+              className="cyber-btn-solid px-6 py-2.5 rounded-lg inline-flex items-center gap-2 font-semibold tracking-wide uppercase text-sm w-full justify-center md:w-auto"
+            >
+              Report Now
+            </Link>
+          </div>
         </div>
       </div>
 
