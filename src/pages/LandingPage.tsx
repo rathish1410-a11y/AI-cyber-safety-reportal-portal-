@@ -1,9 +1,22 @@
 import { Link } from 'react-router-dom';
 import { Shield, AlertTriangle, BarChart3, Users, Brain, Clock, ArrowRight, Lock, Database, Zap, Radio } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 export default function LandingPage() {
   const { user } = useAuth();
+  const [liveRiskScore, setLiveRiskScore] = useState<number>(78);
+
+  useEffect(() => {
+    async function fetchLiveScore() {
+      const { data, error } = await supabase.rpc('get_average_risk_score');
+      if (!error && data !== null) {
+        setLiveRiskScore(data);
+      }
+    }
+    fetchLiveScore();
+  }, []);
 
   const features = [
     { icon: Lock, title: 'Secure Reporting', description: 'Report cyber incidents safely with end-to-end encryption and privacy protection.' },
@@ -141,18 +154,18 @@ export default function LandingPage() {
                       <Brain className="w-5 h-5" style={{ color: 'var(--cyber-blue)' }} />
                     </div>
                     <p className="text-white font-semibold mb-1 text-sm font-mono">AI THREAT ANALYSIS</p>
-                    <p className="text-slate-500 text-xs mb-4 font-mono">Analyzing incident<span className="terminal-cursor"></span></p>
+                    <p className="text-slate-500 text-xs mb-4 font-mono">Live system average<span className="terminal-cursor"></span></p>
                     <div className="space-y-2 text-left">
                       <div className="flex justify-between text-xs">
                         <span className="text-slate-500 font-mono">Risk Score</span>
-                        <span className="font-mono font-bold" style={{ color: 'var(--cyber-amber)' }}>78%</span>
+                        <span className="font-mono font-bold" style={{ color: 'var(--cyber-amber)' }}>{liveRiskScore}%</span>
                       </div>
                       <div className="risk-bar">
-                        <div className="risk-bar-fill" style={{ width: '78%', background: 'linear-gradient(90deg, var(--cyber-blue-mid), var(--cyber-amber))' }} />
+                        <div className="risk-bar-fill transition-all duration-1000 ease-out" style={{ width: `${liveRiskScore}%`, background: 'linear-gradient(90deg, var(--cyber-blue-mid), var(--cyber-amber))' }} />
                       </div>
                       <div className="flex justify-between text-xs pt-1">
-                        <span className="text-slate-500 font-mono">Category</span>
-                        <span className="font-mono" style={{ color: 'var(--cyber-blue)' }}>Phishing</span>
+                        <span className="text-slate-500 font-mono">Status</span>
+                        <span className="font-mono" style={{ color: 'var(--cyber-blue)' }}>Monitoring</span>
                       </div>
                     </div>
                   </div>
