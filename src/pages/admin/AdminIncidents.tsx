@@ -215,7 +215,8 @@ export default function AdminIncidents() {
                   return (
                     <tr
                       key={incident.id}
-                      className="border-b border-[rgba(56,189,248,0.05)] hover:bg-[rgba(56,189,248,0.03)] transition-colors"
+                      onClick={() => setSelectedIncident(incident)}
+                      className="border-b border-[rgba(56,189,248,0.05)] hover:bg-[rgba(56,189,248,0.05)] transition-colors cursor-pointer"
                     >
                       <td className="px-6 py-4">
                         <p className="text-white font-medium">{incident.title}</p>
@@ -239,6 +240,7 @@ export default function AdminIncidents() {
                             onChange={(e) =>
                               updateIncidentStatus(incident.id, e.target.value as IncidentStatus)
                             }
+                            onClick={(e) => e.stopPropagation()}
                             className={`cyber-badge ${statusBadge.className} text-xs px-2 py-1 rounded appearance-none cursor-pointer pr-6`}
                           >
                             {statuses.map((s) => (
@@ -350,6 +352,35 @@ export default function AdminIncidents() {
                 <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Description</h5>
                 <p className="text-slate-300 whitespace-pre-wrap">{selectedIncident.description}</p>
               </div>
+
+              {(selectedIncident.phone_number || selectedIncident.platform || selectedIncident.incident_date || selectedIncident.financial_loss) && (
+                <div className="grid sm:grid-cols-2 gap-4 bg-[rgba(56,189,248,0.02)] p-4 rounded-lg border border-[rgba(56,189,248,0.05)]">
+                  {selectedIncident.phone_number && (
+                    <div>
+                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Phone Number</h5>
+                      <p className="text-white font-mono text-sm">{selectedIncident.phone_number}</p>
+                    </div>
+                  )}
+                  {selectedIncident.platform && (
+                    <div>
+                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Platform</h5>
+                      <p className="text-white font-mono text-sm capitalize">{selectedIncident.platform}</p>
+                    </div>
+                  )}
+                  {selectedIncident.incident_date && (
+                    <div>
+                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Incident Date</h5>
+                      <p className="text-white font-mono text-sm">{selectedIncident.incident_date}</p>
+                    </div>
+                  )}
+                  {selectedIncident.financial_loss && (
+                    <div>
+                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Financial Loss</h5>
+                      <p className="text-white font-mono text-sm">{selectedIncident.financial_loss}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {selectedIncident.ai_risk_score !== null && (
                 <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
