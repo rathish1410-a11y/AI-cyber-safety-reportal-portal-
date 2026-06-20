@@ -12,9 +12,53 @@ export default function AlertsPage() {
 
   useEffect(() => { fetchAlerts(); }, []);
 
+  const playCyberAlertSound = () => {
+    try {
+      const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioContext();
+      
+      const osc1 = ctx.createOscillator();
+      const osc2 = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+      
+      // Futuristic two-tone drop ping
+      osc1.frequency.setValueAtTime(880, ctx.currentTime);
+      osc1.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+      osc2.frequency.setValueAtTime(1760, ctx.currentTime);
+      osc2.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+      
+      gainNode.gain.setValueAtTime(0, ctx.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+
+      osc1.connect(gainNode);
+      osc2.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      osc1.start();
+      osc2.start();
+      
+      setTimeout(() => {
+        osc1.stop();
+        osc2.stop();
+        ctx.close();
+      }, 600);
+    } catch (e) {
+      console.error("Audio play failed:", e);
+    }
+  };
+
   async function fetchAlerts() {
     const { data } = await supabase.from('alerts').select('*').eq('is_active', true).order('created_at', { ascending: false });
-    if (data) setAlerts(data);
+    if (data && data.length > 0) {
+      setAlerts(data);
+      playCyberAlertSound(); // Play notification sound when alerts are loaded
+    } else if (data) {
+      setAlerts(data);
+    }
     setLoading(false);
   }
 
