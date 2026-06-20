@@ -280,7 +280,7 @@ export default function LandingPage() {
               <Shield className="w-5 h-5" style={{ color: 'var(--cyber-blue)' }} />
               <span className="text-white font-mono font-semibold text-sm tracking-wider">CYBERSAFE INDIA</span>
             </div>
-            <p className="text-slate-600 text-xs font-mono">Smart India Hackathon 2024 — Problem Statement #25183</p>
+            <p className="text-slate-600 text-xs font-mono">Smart India Hackathon 2025 — Problem Statement #25183</p>
             <div className="flex items-center gap-2 text-xs font-mono" style={{ color: 'rgba(56,189,248,0.4)' }}>
               <Clock className="w-3.5 h-3.5" />
               <span>24/7 Security Monitoring</span>

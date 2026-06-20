@@ -164,7 +164,7 @@ export default function AlertsPage() {
               <Shield className="w-5 h-5" style={{ color: 'var(--cyber-blue)' }} />
               <span className="text-white font-mono font-semibold text-sm tracking-wider">CYBERSAFE INDIA</span>
             </div>
-            <p className="text-slate-600 text-xs font-mono">Smart India Hackathon 2024</p>
+            <p className="text-slate-600 text-xs font-mono">Smart India Hackathon 2025</p>
           </div>
         </div>
       </footer>
