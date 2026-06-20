@@ -86,17 +86,17 @@ export default function ReportIncident() {
       });
 
       if (insertError) {
-        // Demo mode: simulate success
-        console.log('Demo mode: simulating incident submission', { title, incidentType, severity });
+        console.error("Supabase Insert Error:", insertError);
+        setError(`Submission failed: ${insertError.message} - Please ensure your Supabase database schema is up to date.`);
+        setLoading(false);
+        return;
       }
 
       setSuccess(true);
       setTimeout(() => navigate('/dashboard/incidents'), 2000);
-    } catch {
-      // Demo mode fallback
-      setSuccess(true);
-      setTimeout(() => navigate('/dashboard/incidents'), 2000);
-    } finally {
+    } catch (err: any) {
+      console.error("Unexpected error:", err);
+      setError(err.message || 'An unexpected error occurred while submitting the report.');
       setLoading(false);
     }
   };
