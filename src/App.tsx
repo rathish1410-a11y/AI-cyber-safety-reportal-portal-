@@ -84,6 +84,7 @@ function AppRoutes() {
           <Route path="incidents" element={<AdminIncidents />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="alerts" element={<AdminAlerts />} />
+          <Route path="ai-assistant" element={<AIAssistantPage />} />
           <Route path="phishing-detector" element={<PhishingDetector />} />
           <Route path="profile" element={<ProfilePage isAdmin />} />
         </Route>
