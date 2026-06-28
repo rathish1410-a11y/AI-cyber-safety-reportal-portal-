@@ -97,7 +97,10 @@ export default function ReportIncident() {
 
         if (uploadError) {
           console.error('File upload error:', uploadError);
-          // Continue without file — don't block the report submission
+          setError(`Screenshot upload failed: ${uploadError.message}. Your report will still be submitted without the file.`);
+          // Wait 3 seconds so user sees the warning, then continue
+          await new Promise(r => setTimeout(r, 3000));
+          setError(null);
         } else {
           const { data: urlData } = supabase.storage
             .from('incident-files')
