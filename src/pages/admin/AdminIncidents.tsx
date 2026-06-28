@@ -344,12 +344,29 @@ export default function AdminIncidents() {
                         {new Date(incident.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          onClick={() => setSelectedIncident(incident)}
-                          className="text-cyber-400 hover:text-cyber-300 transition-colors"
-                        >
-                          <Eye className="w-5 h-5" />
-                        </button>
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => setSelectedIncident(incident)}
+                            className="text-cyber-400 hover:text-cyber-300 transition-colors tooltip-trigger relative"
+                            title="View Details"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          {incident.user_id && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedIncident(incident);
+                                setActiveTab('messages');
+                              }}
+                              className="text-cyber-400 hover:text-cyber-300 transition-colors flex items-center gap-1.5 bg-cyber-900/40 px-3 py-1.5 rounded-lg border border-cyber-500/30 hover:bg-cyber-900/60"
+                              title="Chat with Reporter"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              <span className="text-xs font-mono font-medium">Chat</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
