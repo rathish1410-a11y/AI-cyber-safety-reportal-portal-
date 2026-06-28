@@ -45,3 +45,12 @@ export interface Alert {
   created_at: string;
   updated_at: string;
 }
+
+export interface Message {
+  id: string;
+  incident_id: string;
+  sender_id: string;
+  sender_role: UserRole;
+  content: string;
+  created_at: string;
+}

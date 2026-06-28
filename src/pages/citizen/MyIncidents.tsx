@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FileWarning, Search, Brain, Eye, X, AlertCircle } from 'lucide-react';
+import { FileWarning, Search, Brain, Eye, X, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
-import { Incident } from '../../types/database';
+import { Incident, Message } from '../../types/database';
 
 export default function MyIncidents() {
   const { user } = useAuth();
@@ -12,6 +12,11 @@ export default function MyIncidents() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  
+  const [activeTab, setActiveTab] = useState<'details' | 'messages'>('details');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sending, setSending] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -40,10 +45,56 @@ export default function MyIncidents() {
       }
     } catch (err) {
       console.error('Error fetching incidents:', err);
-      setError('Failed to load your incidents. Please refresh the page.');
-      setIncidents([]);
+      setError('Failed to fetch incidents. Please try again.');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function fetchMessages(incidentId: string) {
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('incident_id', incidentId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setMessages(data || []);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    }
+  }
+
+  useEffect(() => {
+    if (selectedIncident && activeTab === 'messages') {
+      fetchMessages(selectedIncident.id);
+    }
+  }, [selectedIncident, activeTab]);
+
+  async function handleSendMessage(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedIncident || !user) return;
+
+    setSending(true);
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .insert({
+          incident_id: selectedIncident.id,
+          sender_id: user.id,
+          sender_role: 'citizen',
+          content: newMessage.trim()
+        });
+
+      if (error) throw error;
+      
+      setNewMessage('');
+      fetchMessages(selectedIncident.id);
+    } catch (err) {
+      console.error('Error sending message:', err);
+    } finally {
+      setSending(false);
     }
   }
 
@@ -207,16 +258,51 @@ export default function MyIncidents() {
         {selectedIncident && (
           <div className="cyber-modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="cyber-modal cyber-frame bg-dark-900 border border-[rgba(56,189,248,0.15)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-dark-900 border-b border-[rgba(56,189,248,0.1)] p-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-white font-display tracking-wide text-neon-cyan">Incident Details</h3>
-                <button
-                  onClick={() => setSelectedIncident(null)}
-                  className="text-slate-400 hover:text-cyber-400 transition-colors"
-                >
-                  <X className="w-6 h-6" />
-                </button>
+              <div className="sticky top-0 z-10 bg-dark-900 border-b border-[rgba(56,189,248,0.1)]">
+                <div className="p-4 flex items-center justify-between">
+                  <h3 className="text-lg font-semibold text-white font-display tracking-wide text-neon-cyan">Incident Details</h3>
+                  <button
+                    onClick={() => {
+                      setSelectedIncident(null);
+                      setActiveTab('details');
+                    }}
+                    className="text-slate-400 hover:text-cyber-400 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+                
+                {/* Tabs */}
+                <div className="flex px-4 gap-6 border-t border-[rgba(56,189,248,0.05)]">
+                  <button
+                    onClick={() => setActiveTab('details')}
+                    className={`py-3 text-sm font-mono transition-colors relative ${
+                      activeTab === 'details' ? 'text-cyber-400' : 'text-slate-400 hover:text-slate-300'
+                    }`}
+                  >
+                    Overview
+                    {activeTab === 'details' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyber-400 glow-cyan shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('messages')}
+                    className={`py-3 text-sm font-mono transition-colors relative flex items-center gap-2 ${
+                      activeTab === 'messages' ? 'text-cyber-400' : 'text-slate-400 hover:text-slate-300'
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    Messages
+                    {activeTab === 'messages' && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cyber-400 glow-cyan shadow-[0_0_8px_rgba(56,189,248,0.8)]" />
+                    )}
+                  </button>
+                </div>
               </div>
-              <div className="p-6 space-y-6">
+              
+              <div className="p-6">
+                {activeTab === 'details' ? (
+                  <div className="space-y-6">
                 <div>
                   <h4 className="text-xl font-bold text-white mb-2">{selectedIncident.title}</h4>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -307,6 +393,59 @@ export default function MyIncidents() {
                 <div className="text-slate-400 text-sm font-mono">
                   Submitted on {new Date(selectedIncident.created_at).toLocaleString()}
                 </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col h-[500px]">
+                    <div className="flex-1 overflow-y-auto pr-2 space-y-4 mb-4">
+                      {messages.length === 0 ? (
+                        <div className="text-center text-slate-400 font-mono py-8 bg-dark-800/50 rounded-lg border border-[rgba(56,189,248,0.1)]">
+                          No messages yet. Send a message to communicate with the admin team.
+                        </div>
+                      ) : (
+                        messages.map((msg) => {
+                          const isOwn = msg.sender_id === user?.id;
+                          return (
+                            <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                              <div 
+                                className={`max-w-[80%] rounded-lg p-3 ${
+                                  isOwn 
+                                    ? 'bg-cyber-900/40 border border-cyber-500/30 text-white' 
+                                    : 'bg-dark-800 border border-slate-700/50 text-slate-200'
+                                }`}
+                              >
+                                <div className="text-xs font-mono text-slate-400 mb-1 flex items-center gap-2 justify-between">
+                                  <span>{isOwn ? 'You' : 'Admin'}</span>
+                                  <span>{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                                <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                    
+                    <form onSubmit={handleSendMessage} className="mt-auto">
+                      <div className="relative flex items-center">
+                        <input
+                          type="text"
+                          value={newMessage}
+                          onChange={(e) => setNewMessage(e.target.value)}
+                          placeholder="Type a message..."
+                          className="w-full bg-dark-800 border border-[rgba(56,189,248,0.2)] rounded-lg py-3 pl-4 pr-12 text-white focus:outline-none focus:border-cyber-400 font-mono text-sm transition-colors"
+                          disabled={sending}
+                        />
+                        <button
+                          type="submit"
+                          disabled={!newMessage.trim() || sending}
+                          className="absolute right-2 p-2 text-cyber-400 hover:text-cyber-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          <Send className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                )}
               </div>
             </div>
           </div>

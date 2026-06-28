@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle } from 'lucide-react';
+import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle, MessageSquare, Send } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { Incident, IncidentStatus, IncidentType, Severity } from '../../types/database';
+import { Incident, IncidentStatus, IncidentType, Severity, Message } from '../../types/database';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AdminIncidents() {
+  const { user } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -11,6 +13,10 @@ export default function AdminIncidents() {
   const [filterSeverity, setFilterSeverity] = useState<string>('');
   const [filterType, setFilterType] = useState<string>('');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+  const [activeTab, setActiveTab] = useState<'details' | 'messages'>('details');
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [sendingMessage, setSendingMessage] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -50,6 +56,53 @@ export default function AdminIncidents() {
 
   const handleSearch = () => {
     fetchIncidents();
+  };
+
+  useEffect(() => {
+    if (selectedIncident) {
+      fetchMessages(selectedIncident.id);
+    } else {
+      setMessages([]);
+      setActiveTab('details');
+    }
+  }, [selectedIncident]);
+
+  async function fetchMessages(incidentId: string) {
+    const { data, error: fetchError } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('incident_id', incidentId)
+      .order('created_at', { ascending: true });
+
+    if (fetchError) {
+      console.error('Error fetching messages:', fetchError);
+    } else {
+      setMessages(data || []);
+    }
+  }
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMessage.trim() || !selectedIncident || !user) return;
+
+    setSendingMessage(true);
+    const { error: sendError } = await supabase
+      .from('messages')
+      .insert({
+        incident_id: selectedIncident.id,
+        sender_id: user.id,
+        sender_role: 'admin',
+        content: newMessage.trim()
+      });
+
+    if (sendError) {
+      console.error('Error sending message:', sendError);
+      setActionError('Failed to send message. Please try again.');
+    } else {
+      setNewMessage('');
+      fetchMessages(selectedIncident.id);
+    }
+    setSendingMessage(false);
   };
 
   const updateIncidentStatus = async (incidentId: string, newStatus: IncidentStatus) => {
@@ -322,200 +375,280 @@ export default function AdminIncidents() {
                 <X className="w-6 h-6" />
               </button>
             </div>
-            <div className="p-6 space-y-6">
-              <div>
-                <h4 className="text-xl font-bold text-white mb-2">{selectedIncident.title}</h4>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-slate-400 text-sm capitalize font-mono">
-                    {selectedIncident.incident_type.replace('_', ' ')}
-                  </span>
-                  <span
-                    className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
-                      selectedIncident.severity
-                    )}`}
-                  >
-                    {selectedIncident.severity}
-                  </span>
-                  <span
-                    className={`cyber-badge text-xs px-2 py-1 rounded ${
-                      getStatusBadge(selectedIncident.status).className
-                    }`}
-                  >
-                    {getStatusBadge(selectedIncident.status).label}
-                  </span>
-                </div>
+
+            {selectedIncident.user_id && (
+              <div className="flex border-b border-[rgba(56,189,248,0.1)]">
+                <button
+                  onClick={() => setActiveTab('details')}
+                  className={`flex-1 py-3 text-sm font-mono font-medium transition-colors ${
+                    activeTab === 'details'
+                      ? 'text-cyber-400 border-b-2 border-cyber-400 bg-cyber-400/5'
+                      : 'text-slate-400 hover:text-slate-300 hover:bg-white/5'
+                  }`}
+                >
+                  Details
+                </button>
+                <button
+                  onClick={() => setActiveTab('messages')}
+                  className={`flex-1 py-3 text-sm font-mono font-medium transition-colors flex items-center justify-center gap-2 ${
+                    activeTab === 'messages'
+                      ? 'text-cyber-400 border-b-2 border-cyber-400 bg-cyber-400/5'
+                      : 'text-slate-400 hover:text-slate-300 hover:bg-white/5'
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Messages
+                </button>
               </div>
+            )}
 
-              {/* Status Update */}
-              <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
-                <p className="text-slate-300 text-sm mb-3 font-mono">Update Status</p>
-                {actionError && (
-                  <div className="mb-3 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200 font-mono text-xs">
-                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
-                    <p>{actionError}</p>
-                  </div>
-                )}
-                <div className="flex gap-2">
-                  {statuses.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => updateIncidentStatus(selectedIncident.id, s)}
-                      disabled={updating}
-                      className={`cyber-btn px-4 py-2 rounded-lg text-sm font-medium font-mono transition-all ${
-                        selectedIncident.status === s
-                          ? 'bg-cyber-400/20 text-cyber-400 border border-cyber-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]'
-                          : 'bg-dark-800 text-slate-300 border border-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.05)] hover:text-cyber-400'
-                      }`}
-                    >
-                      {s.replace('_', ' ').charAt(0).toUpperCase() + s.replace('_', ' ').slice(1)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Description</h5>
-                <p className="text-slate-300 whitespace-pre-wrap">{selectedIncident.description}</p>
-              </div>
-
-              {(selectedIncident.phone_number || selectedIncident.platform || selectedIncident.incident_date || selectedIncident.financial_loss) && (
-                <div className="grid sm:grid-cols-2 gap-4 bg-[rgba(56,189,248,0.02)] p-4 rounded-lg border border-[rgba(56,189,248,0.05)]">
-                  {selectedIncident.phone_number && (
-                    <div>
-                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Phone Number</h5>
-                      <p className="text-white font-mono text-sm">{selectedIncident.phone_number}</p>
-                    </div>
-                  )}
-                  {selectedIncident.platform && (
-                    <div>
-                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Platform</h5>
-                      <p className="text-white font-mono text-sm capitalize">{selectedIncident.platform}</p>
-                    </div>
-                  )}
-                  {selectedIncident.incident_date && (
-                    <div>
-                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Incident Date</h5>
-                      <p className="text-white font-mono text-sm">{selectedIncident.incident_date}</p>
-                    </div>
-                  )}
-                  {selectedIncident.financial_loss && (
-                    <div>
-                      <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Financial Loss</h5>
-                      <p className="text-white font-mono text-sm">{selectedIncident.financial_loss}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {(selectedIncident.attacker_ip || selectedIncident.malicious_url || selectedIncident.crypto_wallet) && (
-                <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <AlertCircle className="w-4 h-4 text-orange-400" />
-                    <span className="text-orange-400 font-medium font-mono text-sm uppercase tracking-wider">Technical Indicators</span>
-                  </div>
-                  <div className="grid sm:grid-cols-3 gap-4">
-                    {selectedIncident.attacker_ip && (
-                      <div>
-                        <p className="text-slate-400 text-xs font-mono mb-1">Attacker IP</p>
-                        <p className="text-white font-mono text-sm break-all">{selectedIncident.attacker_ip}</p>
-                      </div>
-                    )}
-                    {selectedIncident.malicious_url && (
-                      <div>
-                        <p className="text-slate-400 text-xs font-mono mb-1">Malicious URL</p>
-                        <p className="text-white font-mono text-sm break-all">
-                          <a href={selectedIncident.malicious_url} target="_blank" rel="noopener noreferrer" className="text-cyber-400 hover:underline">
-                            {selectedIncident.malicious_url}
-                          </a>
-                        </p>
-                      </div>
-                    )}
-                    {selectedIncident.crypto_wallet && (
-                      <div>
-                        <p className="text-slate-400 text-xs font-mono mb-1">Crypto Wallet</p>
-                        <p className="text-white font-mono text-sm break-all">{selectedIncident.crypto_wallet}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedIncident.ai_risk_score !== null && (
-                <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Brain className="w-5 h-5 text-cyber-400" />
-                    <span className="text-cyber-400 font-medium font-mono">AI Insights</span>
-                  </div>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-slate-400 text-sm font-mono mb-1">Risk Score</p>
-                      <div className="flex items-center gap-2">
-                        <div className="risk-bar flex-1 h-2 rounded-full overflow-hidden">
-                          <div
-                            className={`risk-bar-fill h-full ${
-                              selectedIncident.ai_risk_score >= 60
-                                ? 'bg-gradient-to-r from-orange-500 to-red-500'
-                                : 'bg-gradient-to-r from-cyber-400 to-matrix-400'
-                            }`}
-                            style={{ width: `${selectedIncident.ai_risk_score}%` }}
-                          />
-                        </div>
-                        <span
-                          className={`font-mono ${getRiskScoreColor(selectedIncident.ai_risk_score)}`}
-                        >
-                          {selectedIncident.ai_risk_score}
-                        </span>
-                      </div>
-                    </div>
-                    {selectedIncident.ai_suggested_category && (
-                      <div>
-                        <p className="text-slate-400 text-sm font-mono mb-1">Suggested Category</p>
-                        <p className="text-white capitalize font-mono">
-                          {selectedIncident.ai_suggested_category.replace('_', ' ')}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {selectedIncident.file_url && (
-                <div>
-                  <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2 uppercase tracking-wider">Attached Screenshot / File</h5>
-                  {/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(selectedIncident.file_url) ? (
-                    <div className="space-y-2">
-                      <a href={selectedIncident.file_url} target="_blank" rel="noopener noreferrer">
-                        <img
-                          src={selectedIncident.file_url}
-                          alt="Incident screenshot"
-                          className="max-h-64 max-w-full rounded-lg border border-cyber-400/20 object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                        />
-                      </a>
-                      <a
-                        href={selectedIncident.file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-cyber-400 hover:text-cyber-300 transition-colors text-sm font-mono inline-block"
+            <div className="p-6">
+              {activeTab === 'details' ? (
+                <div className="space-y-6">
+                  <div>
+                    <h4 className="text-xl font-bold text-white mb-2">{selectedIncident.title}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-slate-400 text-sm capitalize font-mono">
+                        {selectedIncident.incident_type.replace('_', ' ')}
+                      </span>
+                      <span
+                        className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
+                          selectedIncident.severity
+                        )}`}
                       >
-                        Open Full Size
-                      </a>
+                        {selectedIncident.severity}
+                      </span>
+                      <span
+                        className={`cyber-badge text-xs px-2 py-1 rounded ${
+                          getStatusBadge(selectedIncident.status).className
+                        }`}
+                      >
+                        {getStatusBadge(selectedIncident.status).label}
+                      </span>
                     </div>
-                  ) : (
-                    <a
-                      href={selectedIncident.file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-cyber-400 hover:text-cyber-300 transition-colors font-mono"
-                    >
-                      Download File
-                    </a>
+                  </div>
+
+                  {/* Status Update */}
+                  <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
+                    <p className="text-slate-300 text-sm mb-3 font-mono">Update Status</p>
+                    {actionError && (
+                      <div className="mb-3 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200 font-mono text-xs">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
+                        <p>{actionError}</p>
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      {statuses.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => updateIncidentStatus(selectedIncident.id, s)}
+                          disabled={updating}
+                          className={`cyber-btn px-4 py-2 rounded-lg text-sm font-medium font-mono transition-all ${
+                            selectedIncident.status === s
+                              ? 'bg-cyber-400/20 text-cyber-400 border border-cyber-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]'
+                              : 'bg-dark-800 text-slate-300 border border-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.05)] hover:text-cyber-400'
+                          }`}
+                        >
+                          {s.replace('_', ' ').charAt(0).toUpperCase() + s.replace('_', ' ').slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Description</h5>
+                    <p className="text-slate-300 whitespace-pre-wrap">{selectedIncident.description}</p>
+                  </div>
+
+                  {(selectedIncident.phone_number || selectedIncident.platform || selectedIncident.incident_date || selectedIncident.financial_loss) && (
+                    <div className="grid sm:grid-cols-2 gap-4 bg-[rgba(56,189,248,0.02)] p-4 rounded-lg border border-[rgba(56,189,248,0.05)]">
+                      {selectedIncident.phone_number && (
+                        <div>
+                          <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Phone Number</h5>
+                          <p className="text-white font-mono text-sm">{selectedIncident.phone_number}</p>
+                        </div>
+                      )}
+                      {selectedIncident.platform && (
+                        <div>
+                          <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Platform</h5>
+                          <p className="text-white font-mono text-sm capitalize">{selectedIncident.platform}</p>
+                        </div>
+                      )}
+                      {selectedIncident.incident_date && (
+                        <div>
+                          <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Incident Date</h5>
+                          <p className="text-white font-mono text-sm">{selectedIncident.incident_date}</p>
+                        </div>
+                      )}
+                      {selectedIncident.financial_loss && (
+                        <div>
+                          <h5 className="text-xs font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Financial Loss</h5>
+                          <p className="text-white font-mono text-sm">{selectedIncident.financial_loss}</p>
+                        </div>
+                      )}
+                    </div>
                   )}
+
+                  {(selectedIncident.attacker_ip || selectedIncident.malicious_url || selectedIncident.crypto_wallet) && (
+                    <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <AlertCircle className="w-4 h-4 text-orange-400" />
+                        <span className="text-orange-400 font-medium font-mono text-sm uppercase tracking-wider">Technical Indicators</span>
+                      </div>
+                      <div className="grid sm:grid-cols-3 gap-4">
+                        {selectedIncident.attacker_ip && (
+                          <div>
+                            <p className="text-slate-400 text-xs font-mono mb-1">Attacker IP</p>
+                            <p className="text-white font-mono text-sm break-all">{selectedIncident.attacker_ip}</p>
+                          </div>
+                        )}
+                        {selectedIncident.malicious_url && (
+                          <div>
+                            <p className="text-slate-400 text-xs font-mono mb-1">Malicious URL</p>
+                            <p className="text-white font-mono text-sm break-all">
+                              <a href={selectedIncident.malicious_url} target="_blank" rel="noopener noreferrer" className="text-cyber-400 hover:underline">
+                                {selectedIncident.malicious_url}
+                              </a>
+                            </p>
+                          </div>
+                        )}
+                        {selectedIncident.crypto_wallet && (
+                          <div>
+                            <p className="text-slate-400 text-xs font-mono mb-1">Crypto Wallet</p>
+                            <p className="text-white font-mono text-sm break-all">{selectedIncident.crypto_wallet}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedIncident.ai_risk_score !== null && (
+                    <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Brain className="w-5 h-5 text-cyber-400" />
+                        <span className="text-cyber-400 font-medium font-mono">AI Insights</span>
+                      </div>
+                      <div className="grid sm:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-slate-400 text-sm font-mono mb-1">Risk Score</p>
+                          <div className="flex items-center gap-2">
+                            <div className="risk-bar flex-1 h-2 rounded-full overflow-hidden">
+                              <div
+                                className={`risk-bar-fill h-full ${
+                                  selectedIncident.ai_risk_score >= 60
+                                    ? 'bg-gradient-to-r from-orange-500 to-red-500'
+                                    : 'bg-gradient-to-r from-cyber-400 to-matrix-400'
+                                }`}
+                                style={{ width: `${selectedIncident.ai_risk_score}%` }}
+                              />
+                            </div>
+                            <span
+                              className={`font-mono ${getRiskScoreColor(selectedIncident.ai_risk_score)}`}
+                            >
+                              {selectedIncident.ai_risk_score}
+                            </span>
+                          </div>
+                        </div>
+                        {selectedIncident.ai_suggested_category && (
+                          <div>
+                            <p className="text-slate-400 text-sm font-mono mb-1">Suggested Category</p>
+                            <p className="text-white capitalize font-mono">
+                              {selectedIncident.ai_suggested_category.replace('_', ' ')}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedIncident.file_url && (
+                    <div>
+                      <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2 uppercase tracking-wider">Attached Screenshot / File</h5>
+                      {/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(selectedIncident.file_url) ? (
+                        <div className="space-y-2">
+                          <a href={selectedIncident.file_url} target="_blank" rel="noopener noreferrer">
+                            <img
+                              src={selectedIncident.file_url}
+                              alt="Incident screenshot"
+                              className="max-h-64 max-w-full rounded-lg border border-cyber-400/20 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                            />
+                          </a>
+                          <a
+                            href={selectedIncident.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-cyber-400 hover:text-cyber-300 transition-colors text-sm font-mono inline-block"
+                          >
+                            Open Full Size
+                          </a>
+                        </div>
+                      ) : (
+                        <a
+                          href={selectedIncident.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-cyber-400 hover:text-cyber-300 transition-colors font-mono"
+                        >
+                          Download File
+                        </a>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="text-slate-400 text-sm font-mono">
+                    Submitted on {new Date(selectedIncident.created_at).toLocaleString()}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col h-[500px]">
+                  <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 custom-scrollbar">
+                    {messages.length === 0 ? (
+                      <div className="text-center py-8 text-slate-500 font-mono text-sm">
+                        No messages yet. Send a message to the citizen.
+                      </div>
+                    ) : (
+                      messages.map((msg) => (
+                        <div
+                          key={msg.id}
+                          className={`flex flex-col max-w-[80%] ${
+                            msg.sender_role === 'admin' ? 'ml-auto items-end' : 'mr-auto items-start'
+                          }`}
+                        >
+                          <span className="text-[10px] text-slate-500 font-mono mb-1 uppercase tracking-wider">
+                            {msg.sender_role === 'admin' ? 'You (Admin)' : 'Citizen'} • {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                          <div
+                            className={`p-3 rounded-lg text-sm ${
+                              msg.sender_role === 'admin'
+                                ? 'bg-cyber-400/20 border border-cyber-400/30 text-white rounded-tr-none'
+                                : 'bg-dark-800 border border-[rgba(56,189,248,0.1)] text-slate-200 rounded-tl-none'
+                            }`}
+                          >
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <form onSubmit={handleSendMessage} className="relative mt-auto">
+                    <input
+                      type="text"
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder="Type a message to the citizen..."
+                      className="cyber-input w-full pr-12 py-3 bg-dark-900"
+                      disabled={sendingMessage}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!newMessage.trim() || sendingMessage}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-cyber-400 hover:text-cyber-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <Send className="w-5 h-5" />
+                    </button>
+                  </form>
                 </div>
               )}
-
-              <div className="text-slate-400 text-sm font-mono">
-                Submitted on {new Date(selectedIncident.created_at).toLocaleString()}
-              </div>
             </div>
           </div>
         </div>
