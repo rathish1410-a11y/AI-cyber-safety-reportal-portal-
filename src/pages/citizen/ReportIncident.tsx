@@ -58,6 +58,20 @@ export default function ReportIncident() {
     }
   };
 
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selected = e.target.files?.[0] || null;
+    setFile(selected);
+    if (selected && selected.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => setFilePreview(reader.result as string);
+      reader.readAsDataURL(selected);
+    } else {
+      setFilePreview(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -68,7 +82,31 @@ export default function ReportIncident() {
       const riskScore = calculateAIRiskScore(description, severity);
       const suggestedCategory = suggestIncidentCategory(description);
 
-      // Try real Supabase insert first
+      // Upload file to Supabase Storage if a file is selected
+      let fileUrl: string | null = null;
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user!.id}/${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('incident-files')
+          .upload(fileName, file, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (uploadError) {
+          console.error('File upload error:', uploadError);
+          // Continue without file — don't block the report submission
+        } else {
+          const { data: urlData } = supabase.storage
+            .from('incident-files')
+            .getPublicUrl(fileName);
+          fileUrl = urlData?.publicUrl || null;
+        }
+      }
+
+      // Insert incident with file URL
       const { error: insertError } = await supabase.from('incidents').insert({
         user_id: user!.id,
         title,
@@ -79,7 +117,7 @@ export default function ReportIncident() {
         platform: platform || null,
         incident_date: incidentDate || null,
         financial_loss: financialLoss || null,
-        file_url: null,
+        file_url: fileUrl,
         ai_risk_score: riskScore,
         ai_suggested_category: suggestedCategory,
         status: 'pending',
@@ -334,7 +372,7 @@ export default function ReportIncident() {
           <div className="border-2 border-dashed border-[rgba(56,189,248,0.2)] rounded-lg p-8 text-center hover:border-cyber-400/50 hover:shadow-[0_0_15px_rgba(56,189,248,0.1)] transition-all duration-300 bg-dark-900/40">
             <input
               type="file"
-              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              onChange={handleFileChange}
               accept="image/*,.pdf"
               className="hidden"
               id="file-upload"
@@ -353,6 +391,15 @@ export default function ReportIncident() {
                 </>
               )}
             </label>
+            {filePreview && (
+              <div className="mt-4 border border-cyber-400/20 rounded-lg overflow-hidden inline-block">
+                <img
+                  src={filePreview}
+                  alt="Preview"
+                  className="max-h-48 max-w-full object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
 

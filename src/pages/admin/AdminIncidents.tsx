@@ -423,15 +423,35 @@ export default function AdminIncidents() {
 
               {selectedIncident.file_url && (
                 <div>
-                  <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Attached File</h5>
-                  <a
-                    href={selectedIncident.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyber-400 hover:text-cyber-300 transition-colors font-mono"
-                  >
-                    View File
-                  </a>
+                  <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2 uppercase tracking-wider">Attached Screenshot / File</h5>
+                  {/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(selectedIncident.file_url) ? (
+                    <div className="space-y-2">
+                      <a href={selectedIncident.file_url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src={selectedIncident.file_url}
+                          alt="Incident screenshot"
+                          className="max-h-64 max-w-full rounded-lg border border-cyber-400/20 object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                        />
+                      </a>
+                      <a
+                        href={selectedIncident.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-cyber-400 hover:text-cyber-300 transition-colors text-sm font-mono inline-block"
+                      >
+                        Open Full Size
+                      </a>
+                    </div>
+                  ) : (
+                    <a
+                      href={selectedIncident.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyber-400 hover:text-cyber-300 transition-colors font-mono"
+                    >
+                      Download File
+                    </a>
+                  )}
                 </div>
               )}
 
