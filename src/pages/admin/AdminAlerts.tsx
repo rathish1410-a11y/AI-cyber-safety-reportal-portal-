@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Trash2, Edit, AlertTriangle, X, Save } from 'lucide-react';
+import { Plus, Trash2, Edit, AlertTriangle, X, Save, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Alert, Severity } from '../../types/database';
@@ -16,19 +16,27 @@ export default function AdminAlerts() {
     content: '',
     severity: 'medium' as Severity,
   });
+  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAlerts();
   }, []);
 
   async function fetchAlerts() {
+    setError(null);
     try {
-      const { data } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('alerts')
         .select('*')
         .order('created_at', { ascending: false });
+        
+      if (fetchError) throw fetchError;
+      
       setAlerts(data || []);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching alerts:', err);
+      setError('Failed to load alerts. Please refresh the page.');
       setAlerts([]);
     } finally {
       setLoading(false);
@@ -39,14 +47,16 @@ export default function AdminAlerts() {
     setFormData({ title: '', content: '', severity: 'medium' });
     setEditingAlert(null);
     setShowForm(false);
+    setActionError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setActionError(null);
 
     if (editingAlert) {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('alerts')
         .update({
           title: formData.title,
@@ -56,7 +66,12 @@ export default function AdminAlerts() {
         })
         .eq('id', editingAlert.id);
 
-      if (!error) {
+      if (updateError) {
+        console.error('Failed to update alert:', updateError);
+        setActionError('Failed to update alert. Please try again.');
+        setSaving(false);
+        return;
+      } else {
         setAlerts(
           alerts.map((a) =>
             a.id === editingAlert.id
@@ -66,7 +81,7 @@ export default function AdminAlerts() {
         );
       }
     } else {
-      const { data, error } = await supabase
+      const { data, error: insertError } = await supabase
         .from('alerts')
         .insert({
           author_id: user!.id,
@@ -77,7 +92,12 @@ export default function AdminAlerts() {
         })
         .select();
 
-      if (!error && data) {
+      if (insertError) {
+        console.error('Failed to create alert:', insertError);
+        setActionError('Failed to create alert. Please try again.');
+        setSaving(false);
+        return;
+      } else if (data) {
         setAlerts([data[0], ...alerts]);
       }
     }
@@ -87,12 +107,16 @@ export default function AdminAlerts() {
   };
 
   const toggleAlertStatus = async (alertId: string, currentStatus: boolean) => {
-    const { error } = await supabase
+    setActionError(null);
+    const { error: toggleError } = await supabase
       .from('alerts')
       .update({ is_active: !currentStatus, updated_at: new Date().toISOString() })
       .eq('id', alertId);
 
-    if (!error) {
+    if (toggleError) {
+      console.error('Failed to toggle alert:', toggleError);
+      setActionError('Failed to change alert status.');
+    } else {
       setAlerts(
         alerts.map((a) =>
           a.id === alertId ? { ...a, is_active: !currentStatus } : a
@@ -104,8 +128,13 @@ export default function AdminAlerts() {
   const deleteAlert = async (alertId: string) => {
     if (!confirm('Are you sure you want to delete this alert?')) return;
 
-    const { error } = await supabase.from('alerts').delete().eq('id', alertId);
-    if (!error) {
+    setActionError(null);
+    const { error: deleteError } = await supabase.from('alerts').delete().eq('id', alertId);
+    
+    if (deleteError) {
+      console.error('Failed to delete alert:', deleteError);
+      setActionError('Failed to delete alert.');
+    } else {
       setAlerts(alerts.filter((a) => a.id !== alertId));
     }
   };
@@ -168,6 +197,13 @@ export default function AdminAlerts() {
           </button>
         </div>
 
+        {error && (
+          <div className="mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-200 font-mono text-sm shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
+        
         {/* Form Modal */}
         {showForm && (
           <div className="cyber-modal-overlay">
@@ -180,6 +216,14 @@ export default function AdminAlerts() {
                   <X className="w-6 h-6" />
                 </button>
               </div>
+              
+              {actionError && (
+                <div className="mx-6 mt-6 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200 font-mono text-xs shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+                  <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                  <p>{actionError}</p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2 font-mono tracking-wide">

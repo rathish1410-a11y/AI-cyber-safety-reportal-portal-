@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, Brain, Eye, X, ChevronDown } from 'lucide-react';
+import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Incident, IncidentStatus, IncidentType, Severity } from '../../types/database';
 
@@ -12,6 +12,8 @@ export default function AdminIncidents() {
   const [filterType, setFilterType] = useState<string>('');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchIncidents();
@@ -19,6 +21,7 @@ export default function AdminIncidents() {
 
   async function fetchIncidents() {
     setLoading(true);
+    setError(null);
     try {
       let query = supabase
         .from('incidents')
@@ -27,13 +30,18 @@ export default function AdminIncidents() {
       if (filterStatus) query = query.eq('status', filterStatus);
       if (filterSeverity) query = query.eq('severity', filterSeverity);
       if (filterType) query = query.eq('incident_type', filterType);
-      const { data } = await query;
+      
+      const { data, error: fetchError } = await query;
+      if (fetchError) throw fetchError;
+      
       const results = data || [];
       setIncidents(searchQuery ? results.filter(i =>
         i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         i.description.toLowerCase().includes(searchQuery.toLowerCase())
       ) : results);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching incidents:', err);
+      setError('Failed to load incidents. Please refresh the page.');
       setIncidents([]);
     } finally {
       setLoading(false);
@@ -46,12 +54,16 @@ export default function AdminIncidents() {
 
   const updateIncidentStatus = async (incidentId: string, newStatus: IncidentStatus) => {
     setUpdating(true);
-    const { error } = await supabase
+    setActionError(null);
+    const { error: updateError } = await supabase
       .from('incidents')
       .update({ status: newStatus, updated_at: new Date().toISOString() })
       .eq('id', incidentId);
 
-    if (!error) {
+    if (updateError) {
+      console.error('Update failed:', updateError);
+      setActionError('Failed to update incident status. Please try again.');
+    } else {
       setIncidents(
         incidents.map((i) =>
           i.id === incidentId ? { ...i, status: newStatus } : i
@@ -185,6 +197,13 @@ export default function AdminIncidents() {
           </select>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-200 font-mono text-sm shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+          <p>{error}</p>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-12">
@@ -330,6 +349,12 @@ export default function AdminIncidents() {
               {/* Status Update */}
               <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
                 <p className="text-slate-300 text-sm mb-3 font-mono">Update Status</p>
+                {actionError && (
+                  <div className="mb-3 p-3 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-2 text-red-200 font-mono text-xs">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 text-red-400" />
+                    <p>{actionError}</p>
+                  </div>
+                )}
                 <div className="flex gap-2">
                   {statuses.map((s) => (
                     <button

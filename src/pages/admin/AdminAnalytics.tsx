@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Incident } from '../../types/database';
 import {
@@ -25,22 +26,29 @@ export default function AdminAnalytics() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'7' | '30' | '90'>('30');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchIncidents();
   }, [timeRange]);
 
   async function fetchIncidents() {
+    setError(null);
     const daysAgo = new Date();
     daysAgo.setDate(daysAgo.getDate() - parseInt(timeRange));
     try {
-      const { data } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('incidents')
         .select('*')
         .gte('created_at', daysAgo.toISOString())
         .order('created_at', { ascending: true });
+        
+      if (fetchError) throw fetchError;
+      
       setIncidents(data || []);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+      setError('Failed to load analytics data. Please try again.');
       setIncidents([]);
     } finally {
       setLoading(false);
@@ -133,22 +141,30 @@ export default function AdminAnalytics() {
               &gt; Comprehensive analysis of reported incidents<span className="terminal-cursor">_</span>
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          
+          <div className="flex bg-slate-900/50 p-1 rounded-lg border border-[rgba(56,189,248,0.2)]">
             {(['7', '30', '90'] as const).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
-                className={`px-4 py-2 text-sm font-mono rounded-md border transition-all duration-200 ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors font-mono ${
                   timeRange === range
-                    ? 'cyber-btn-solid border-cyber-400 text-white shadow-[0_0_10px_rgba(56,189,248,0.3)]'
-                    : 'border-[rgba(56,189,248,0.15)] text-slate-400 hover:text-cyber-400 hover:border-[rgba(56,189,248,0.3)] bg-dark-900/50'
+                    ? 'bg-cyber-500/20 text-cyber-400 border border-cyber-500/50 shadow-[0_0_10px_rgba(56,189,248,0.2)]'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
                 }`}
               >
-                {range}D
+                {range}d
               </button>
             ))}
           </div>
         </div>
+
+        {error && (
+          <div className="mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-200 font-mono text-sm shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+            <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+            <p>{error}</p>
+          </div>
+        )}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">

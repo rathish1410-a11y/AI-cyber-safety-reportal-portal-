@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileWarning, Clock, CheckCircle, AlertTriangle, Activity, ShieldCheck, Bot } from 'lucide-react';
+import { FileWarning, Clock, CheckCircle, AlertTriangle, Activity, ShieldCheck, Bot, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { Incident, IncidentStatus } from '../../types/database';
@@ -10,6 +10,8 @@ export default function CitizenOverview() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     if (user) {
       fetchIncidents();
@@ -17,14 +19,20 @@ export default function CitizenOverview() {
   }, [user]);
 
   async function fetchIncidents() {
+    setError(null);
     try {
-      const { data } = await supabase
+      const { data, error: fetchError } = await supabase
         .from('incidents')
         .select('*')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false });
+        
+      if (fetchError) throw fetchError;
+      
       setIncidents(data || []);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching incidents:', err);
+      setError('Failed to load your incidents. Please refresh the page.');
       setIncidents([]);
     } finally {
       setLoading(false);
@@ -125,6 +133,13 @@ export default function CitizenOverview() {
           <span className="text-xs font-mono text-neon-green tracking-wider">ACTIVE</span>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-200 font-mono text-sm shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+          <p>{error}</p>
+        </div>
+      )}
 
       {/* Threat Level Banner */}
       <div className={`cyber-card neon-border flex items-center gap-4 ${threatConfig.bg} px-5 py-3.5 mb-8`}>

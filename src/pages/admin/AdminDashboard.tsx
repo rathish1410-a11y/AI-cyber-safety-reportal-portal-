@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FileWarning, AlertTriangle, CheckCircle, TrendingUp, Clock, Zap, Radio, Activity, Shield, Database, Lock } from 'lucide-react';
+import { FileWarning, AlertTriangle, CheckCircle, TrendingUp, Clock, Zap, Radio, Activity, Shield, Database, Lock, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Incident, Alert } from '../../types/database';
 import {
@@ -24,19 +24,26 @@ export default function AdminDashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => { fetchData(); }, []);
 
   async function fetchData() {
     try {
+      setError(null);
       const [incidentsRes, alertsRes] = await Promise.all([
         supabase.from('incidents').select('*').order('created_at', { ascending: false }),
         supabase.from('alerts').select('*').eq('is_active', true).limit(5),
       ]);
+      
+      if (incidentsRes.error) throw incidentsRes.error;
+      if (alertsRes.error) throw alertsRes.error;
+
       if (incidentsRes.data) setIncidents(incidentsRes.data);
       if (alertsRes.data) setAlerts(alertsRes.data);
     } catch (err) {
       console.error('Dashboard fetch error:', err);
+      setError('Failed to load dashboard data. Please check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -139,9 +146,7 @@ export default function AdminDashboard() {
               <span className="text-[10px] font-mono tracking-wider" style={{ color: 'var(--cyber-blue)' }}>LIVE</span>
             </div>
           </div>
-          <p className="terminal-text text-slate-500 text-sm">
-            <span style={{ color: 'rgba(56,189,248,0.35)' }}>{'>'}</span> Threat monitoring and incident analytics overview
-          </p>
+          <p className="text-cyber-400/80 font-mono text-sm tracking-wide">SYSTEM_STATUS: <span className="text-emerald-400">NOMINAL</span></p>
         </div>
         <div className="flex items-center gap-2 rounded-lg px-3 py-2 border" style={{ background: 'var(--dark-card)', borderColor: 'rgba(56,189,248,0.08)' }}>
           <Zap className="w-3.5 h-3.5" style={{ color: 'var(--cyber-green)' }} />
@@ -150,6 +155,13 @@ export default function AdminDashboard() {
           <span className="text-[10px] font-mono text-slate-500">{new Date().toLocaleDateString()}</span>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-8 p-4 bg-red-900/20 border border-red-500/50 rounded-lg flex items-center gap-3 text-red-200 font-mono text-sm shadow-[0_0_15px_rgba(239,68,68,0.1)]">
+          <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+          <p>{error}</p>
+        </div>
+      )}
 
       {/* Stats Grid — HUD-ring style */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
