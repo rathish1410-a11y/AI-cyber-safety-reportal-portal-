@@ -4,7 +4,7 @@ import { AlertCircle, CheckCircle, Upload, Brain, Shield } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { IncidentType, Severity } from '../../types/database';
-import { calculateAIRiskScore, suggestIncidentCategory } from '../../utils/aiInsights';
+import { analyzeIncidentWithGemini } from '../../utils/aiInsights';
 
 const incidentTypes: { value: IncidentType; label: string }[] = [
   { value: 'phishing', label: 'Phishing' },
@@ -39,23 +39,11 @@ export default function ReportIncident() {
   const [financialLoss, setFinancialLoss] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('Submitting...');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [aiInsight, setAiInsight] = useState<{
-    riskScore: number;
-    suggestedCategory: IncidentType;
-  } | null>(null);
-
-  // Generate AI insight when description changes
   const handleDescriptionChange = (value: string) => {
     setDescription(value);
-    if (value.length > 20) {
-      const riskScore = calculateAIRiskScore(value, severity);
-      const suggestedCategory = suggestIncidentCategory(value);
-      setAiInsight({ riskScore, suggestedCategory });
-    } else {
-      setAiInsight(null);
-    }
   };
 
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -78,11 +66,12 @@ export default function ReportIncident() {
     setLoading(true);
 
     try {
-      // Calculate AI insights
-      const riskScore = calculateAIRiskScore(description, severity);
-      const suggestedCategory = suggestIncidentCategory(description);
+      // Calculate AI insights using Gemini
+      setLoadingText('AI Analyzing Incident...');
+      const { riskScore, suggestedCategory } = await analyzeIncidentWithGemini(description, severity, platform);
 
       // Upload file to Supabase Storage if a file is selected
+      setLoadingText('Uploading files...');
       let fileUrl: string | null = null;
       if (file) {
         const fileExt = file.name.split('.').pop();
@@ -109,6 +98,7 @@ export default function ReportIncident() {
         }
       }
 
+      setLoadingText('Saving report...');
       // Insert incident with file URL
       const { error: insertError } = await supabase.from('incidents').insert({
         user_id: user!.id,
@@ -327,44 +317,6 @@ export default function ReportIncident() {
             className="cyber-input w-full resize-none"
           />
 
-          {/* AI Insight */}
-          {aiInsight && (
-            <div className="mt-4 cyber-card neon-border p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Brain className="w-5 h-5 text-cyber-400 animate-pulse" />
-                <span className="terminal-text text-cyber-400 font-medium tracking-wider">AI INSIGHT</span>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="terminal-text text-slate-500 text-xs mb-2 uppercase tracking-wider">Risk Score</p>
-                  <div className="flex items-center gap-3">
-                    <div className="risk-bar flex-1">
-                      <div
-                        className="risk-bar-fill transition-all duration-500"
-                        style={{ width: `${aiInsight.riskScore}%` }}
-                      />
-                    </div>
-                    <span className="text-white font-mono font-bold text-lg">{aiInsight.riskScore}</span>
-                  </div>
-                </div>
-                <div>
-                  <p className="terminal-text text-slate-500 text-xs mb-2 uppercase tracking-wider">Suggested Category</p>
-                  <p className="text-white capitalize font-mono">
-                    {aiInsight.suggestedCategory.replace('_', ' ')}
-                    {aiInsight.suggestedCategory !== incidentType && (
-                      <button
-                        type="button"
-                        onClick={() => setIncidentType(aiInsight.suggestedCategory)}
-                        className="ml-2 text-cyber-400 text-sm hover:underline font-mono"
-                      >
-                        [APPLY]
-                      </button>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* File Upload */}
@@ -423,7 +375,7 @@ export default function ReportIncident() {
             {loading ? (
               <>
                 <div className="w-5 h-5 border-2 border-cyber-400/30 border-t-cyber-400 rounded-full animate-spin" />
-                Submitting...
+                {loadingText}
               </>
             ) : (
               <>

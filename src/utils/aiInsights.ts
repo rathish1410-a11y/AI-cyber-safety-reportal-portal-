@@ -1,60 +1,43 @@
 import { IncidentType } from '../types/database';
+import { askGemini } from '../lib/gemini';
 
-const incidentKeywords: Record<IncidentType, string[]> = {
-  phishing: ['phishing', 'email', 'link', 'fake', 'impersonat', 'credential', 'password', 'login', 'bank', 'account verified', 'suspended', 'click here', 'urgent'],
-  fraud: ['fraud', 'scam', 'money', 'payment', 'transaction', 'transfer', 'investment', 'lottery', 'prize', 'refund', 'fake product', 'selling'],
-  hacking: ['hack', 'unauthorized', 'access', 'breach', 'compromised', 'intrusion', 'vulnerability', 'exploit', 'backdoor', 'remote', 'control'],
-  harassment: ['harass', 'threat', 'abuse', 'stalking', 'bully', 'offensive', 'hate', 'discriminat', 'sexual', 'message', 'repeated'],
-  identity_theft: ['identity', 'stolen', 'ssn', 'pan', 'aadhaar', 'personal information', 'impersonat', 'credit', 'loan', 'account opened'],
-  malware: ['malware', 'virus', 'trojan', 'ransomware', 'spyware', 'adware', 'infected', 'download', 'attach', 'executable', 'slow', 'popup'],
-  other: [],
-};
+export async function analyzeIncidentWithGemini(
+  description: string,
+  severity: string,
+  platform: string
+): Promise<{ riskScore: number; suggestedCategory: IncidentType }> {
+  const systemInstruction = `You are an expert cybersecurity AI. Analyze the given incident report and return ONLY a valid JSON object with exactly two keys:
+1. "riskScore": A number from 0 to 100 indicating the severity and risk level of the incident. High risk = data loss, financial loss, identity theft, ransomware. Low risk = spam, minor harassment.
+2. "suggestedCategory": Must be exactly one of these strings: "phishing", "fraud", "hacking", "harassment", "identity_theft", "malware", "other".
+Do not return any markdown formatting, backticks, or other text. Just the raw JSON object.`;
 
-export function calculateAIRiskScore(description: string, severity: string): number {
-  const descLower = description.toLowerCase();
-  let score = severity === 'critical' ? 80 : severity === 'high' ? 60 : severity === 'medium' ? 40 : 20;
+  const prompt = `Incident Details:
+Severity Level: ${severity}
+Platform/App: ${platform || 'Not specified'}
+Description: ${description}`;
 
-  const highRiskKeywords = ['bank', 'financial', 'password', 'ssn', 'identity', 'unauthorized access', 'money', 'ransom'];
-  const mediumRiskKeywords = ['click', 'email', 'download', 'account', 'personal'];
+  try {
+    const response = await askGemini(prompt, systemInstruction);
+    const cleanResponse = response.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parsed = JSON.parse(cleanResponse);
 
-  highRiskKeywords.forEach(keyword => {
-    if (descLower.includes(keyword)) score += 10;
-  });
-  mediumRiskKeywords.forEach(keyword => {
-    if (descLower.includes(keyword)) score += 5;
-  });
+    const validCategories = ['phishing', 'fraud', 'hacking', 'harassment', 'identity_theft', 'malware', 'other'];
+    const suggestedCategory = validCategories.includes(parsed.suggestedCategory)
+      ? (parsed.suggestedCategory as IncidentType)
+      : 'other';
 
-  return Math.min(100, score);
+    const riskScore = typeof parsed.riskScore === 'number'
+      ? Math.max(0, Math.min(100, parsed.riskScore))
+      : 50;
+
+    return { riskScore, suggestedCategory };
+  } catch (error) {
+    console.error('AI Analysis failed, falling back to defaults:', error);
+    // Fallback logic
+    return {
+      riskScore: severity === 'critical' ? 80 : severity === 'high' ? 60 : severity === 'medium' ? 40 : 20,
+      suggestedCategory: 'other',
+    };
+  }
 }
 
-export function suggestIncidentCategory(description: string): IncidentType {
-  const descLower = description.toLowerCase();
-  const scores: Record<IncidentType, number> = {
-    phishing: 0,
-    fraud: 0,
-    hacking: 0,
-    harassment: 0,
-    identity_theft: 0,
-    malware: 0,
-    other: 0,
-  };
-
-  Object.entries(incidentKeywords).forEach(([type, keywords]) => {
-    keywords.forEach(keyword => {
-      if (descLower.includes(keyword)) {
-        scores[type as IncidentType] += 1;
-      }
-    });
-  });
-
-  let maxScore = 0;
-  let maxType: IncidentType = 'other';
-  Object.entries(scores).forEach(([type, score]) => {
-    if (score > maxScore) {
-      maxScore = score;
-      maxType = type as IncidentType;
-    }
-  });
-
-  return maxType;
-}
