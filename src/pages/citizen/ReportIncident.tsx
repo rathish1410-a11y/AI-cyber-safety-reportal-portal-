@@ -37,6 +37,9 @@ export default function ReportIncident() {
   const [platform, setPlatform] = useState('');
   const [incidentDate, setIncidentDate] = useState('');
   const [financialLoss, setFinancialLoss] = useState('');
+  const [attackerIp, setAttackerIp] = useState('');
+  const [maliciousUrl, setMaliciousUrl] = useState('');
+  const [cryptoWallet, setCryptoWallet] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Submitting...');
@@ -68,7 +71,11 @@ export default function ReportIncident() {
     try {
       // Calculate AI insights using Gemini
       setLoadingText('AI Analyzing Incident...');
-      const { riskScore, suggestedCategory } = await analyzeIncidentWithGemini(description, severity, platform);
+      const { riskScore, suggestedCategory } = await analyzeIncidentWithGemini(description, severity, platform, {
+        attackerIp: attackerIp || null,
+        maliciousUrl: maliciousUrl || null,
+        cryptoWallet: cryptoWallet || null
+      });
 
       // Upload file to Supabase Storage if a file is selected
       setLoadingText('Uploading files...');
@@ -110,6 +117,9 @@ export default function ReportIncident() {
         platform: platform || null,
         incident_date: incidentDate || null,
         financial_loss: financialLoss || null,
+        attacker_ip: attackerIp || null,
+        malicious_url: maliciousUrl || null,
+        crypto_wallet: cryptoWallet || null,
         file_url: fileUrl,
         ai_risk_score: riskScore,
         ai_suggested_category: suggestedCategory,
@@ -317,6 +327,45 @@ export default function ReportIncident() {
             className="cyber-input w-full resize-none"
           />
 
+        </div>
+
+        {/* Technical Indicators */}
+        <div className="cyber-card cyber-frame p-6">
+          <label className="block text-sm font-mono font-medium text-cyber-400 mb-4 uppercase tracking-wider">
+            Technical Indicators (Optional)
+          </label>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-mono text-slate-400 mb-2">Attacker IP</label>
+              <input
+                type="text"
+                value={attackerIp}
+                onChange={(e) => setAttackerIp(e.target.value)}
+                placeholder="e.g. 192.168.1.1"
+                className="cyber-input w-full text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-400 mb-2">Malicious URL</label>
+              <input
+                type="text"
+                value={maliciousUrl}
+                onChange={(e) => setMaliciousUrl(e.target.value)}
+                placeholder="e.g. http://fake-site.com"
+                className="cyber-input w-full text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-mono text-slate-400 mb-2">Crypto Wallet</label>
+              <input
+                type="text"
+                value={cryptoWallet}
+                onChange={(e) => setCryptoWallet(e.target.value)}
+                placeholder="e.g. bc1q..."
+                className="cyber-input w-full text-sm"
+              />
+            </div>
+          </div>
         </div>
 
         {/* File Upload */}

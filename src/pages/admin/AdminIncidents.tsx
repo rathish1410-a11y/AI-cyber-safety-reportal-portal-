@@ -407,6 +407,39 @@ export default function AdminIncidents() {
                 </div>
               )}
 
+              {(selectedIncident.attacker_ip || selectedIncident.malicious_url || selectedIncident.crypto_wallet) && (
+                <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <AlertCircle className="w-4 h-4 text-orange-400" />
+                    <span className="text-orange-400 font-medium font-mono text-sm uppercase tracking-wider">Technical Indicators</span>
+                  </div>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    {selectedIncident.attacker_ip && (
+                      <div>
+                        <p className="text-slate-400 text-xs font-mono mb-1">Attacker IP</p>
+                        <p className="text-white font-mono text-sm break-all">{selectedIncident.attacker_ip}</p>
+                      </div>
+                    )}
+                    {selectedIncident.malicious_url && (
+                      <div>
+                        <p className="text-slate-400 text-xs font-mono mb-1">Malicious URL</p>
+                        <p className="text-white font-mono text-sm break-all">
+                          <a href={selectedIncident.malicious_url} target="_blank" rel="noopener noreferrer" className="text-cyber-400 hover:underline">
+                            {selectedIncident.malicious_url}
+                          </a>
+                        </p>
+                      </div>
+                    )}
+                    {selectedIncident.crypto_wallet && (
+                      <div>
+                        <p className="text-slate-400 text-xs font-mono mb-1">Crypto Wallet</p>
+                        <p className="text-white font-mono text-sm break-all">{selectedIncident.crypto_wallet}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {selectedIncident.ai_risk_score !== null && (
                 <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4">
                   <div className="flex items-center gap-2 mb-3">

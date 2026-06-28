@@ -25,6 +25,9 @@ export interface Incident {
   incident_date: string | null;
   financial_loss: string | null;
   file_url: string | null;
+  attacker_ip: string | null;
+  malicious_url: string | null;
+  crypto_wallet: string | null;
   status: IncidentStatus;
   ai_risk_score: number | null;
   ai_suggested_category: string | null;

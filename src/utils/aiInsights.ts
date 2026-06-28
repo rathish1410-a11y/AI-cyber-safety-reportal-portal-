@@ -4,17 +4,28 @@ import { askGemini } from '../lib/gemini';
 export async function analyzeIncidentWithGemini(
   description: string,
   severity: string,
-  platform: string
+  platform: string,
+  indicators?: {
+    attackerIp?: string | null;
+    maliciousUrl?: string | null;
+    cryptoWallet?: string | null;
+  }
 ): Promise<{ riskScore: number; suggestedCategory: IncidentType }> {
   const systemInstruction = `You are an expert cybersecurity AI. Analyze the given incident report and return ONLY a valid JSON object with exactly two keys:
 1. "riskScore": A number from 0 to 100 indicating the severity and risk level of the incident. High risk = data loss, financial loss, identity theft, ransomware. Low risk = spam, minor harassment.
 2. "suggestedCategory": Must be exactly one of these strings: "phishing", "fraud", "hacking", "harassment", "identity_theft", "malware", "other".
 Do not return any markdown formatting, backticks, or other text. Just the raw JSON object.`;
 
-  const prompt = `Incident Details:
+  let prompt = `Incident Details:
 Severity Level: ${severity}
 Platform/App: ${platform || 'Not specified'}
 Description: ${description}`;
+
+  if (indicators) {
+    if (indicators.attackerIp) prompt += `\nAttacker IP: ${indicators.attackerIp}`;
+    if (indicators.maliciousUrl) prompt += `\nMalicious URL: ${indicators.maliciousUrl}`;
+    if (indicators.cryptoWallet) prompt += `\nCrypto Wallet: ${indicators.cryptoWallet}`;
+  }
 
   try {
     const response = await askGemini(prompt, systemInstruction);
