@@ -15,7 +15,7 @@ export type IncidentStatus = 'pending' | 'in_review' | 'resolved';
 
 export interface Incident {
   id: string;
-  user_id: string;
+  user_id: string | null;
   title: string;
   incident_type: IncidentType;
   severity: Severity;

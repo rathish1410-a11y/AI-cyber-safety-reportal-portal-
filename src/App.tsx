@@ -14,6 +14,9 @@ import ProfilePage from './pages/ProfilePage';
 import DashboardLayout from './components/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Public Pages
+import ReportAnonymous from './pages/ReportAnonymous';
+
 // Citizen Pages
 import CitizenOverview from './pages/citizen/CitizenOverview';
 import ReportIncident from './pages/citizen/ReportIncident';
@@ -53,6 +56,7 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
+        <Route path="/report-anonymous" element={<ReportAnonymous />} />
 
         {/* Citizen Routes */}
         <Route

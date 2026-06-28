@@ -112,7 +112,7 @@ export default function LandingPage() {
                 Report cyber incidents and get instant AI-driven risk scoring, category detection, and real-time safety alerts — built for SIH Problem Statement #25183.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 flex-wrap">
                 <Link
                   to={user ? '/dashboard/report' : '/signup'}
                   className="cyber-btn-solid px-8 py-4 rounded-lg font-semibold text-base flex items-center gap-2 font-mono"
@@ -121,8 +121,15 @@ export default function LandingPage() {
                   <ArrowRight className="w-5 h-5" />
                 </Link>
                 <Link
+                  to="/report-anonymous"
+                  className="cyber-btn px-8 py-4 rounded-lg font-semibold text-base flex items-center gap-2 font-mono border-dashed"
+                >
+                  <Shield className="w-5 h-5 opacity-70" />
+                  REPORT ANONYMOUSLY
+                </Link>
+                <Link
                   to="/alerts"
-                  className="cyber-btn px-8 py-4 rounded-lg font-semibold text-base font-mono"
+                  className="text-slate-400 hover:text-cyber-400 transition-colors text-sm font-mono tracking-wider ml-2"
                 >
                   VIEW ALERTS
                 </Link>
