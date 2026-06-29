@@ -162,13 +162,6 @@ export default function ThreatMap() {
           </div>
         </div>
 
-        {profile?.role === 'admin' && (
-          <div className="mb-4 bg-cyber-500/10 border border-cyber-400/20 text-cyber-400 text-sm px-4 py-2 rounded-lg font-mono flex items-center">
-            <Plus className="w-4 h-4 mr-2" />
-            Admin Mode: Double-click anywhere on the map to instantly report a threat at that location.
-          </div>
-        )}
-
         <div className="cyber-frame bg-slate-900/50 p-1 relative overflow-hidden h-[65vh]">
           {loading ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-dark-950/80 z-[400] backdrop-blur-sm">
