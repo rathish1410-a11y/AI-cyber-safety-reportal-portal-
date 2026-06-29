@@ -24,15 +24,15 @@ export default function AlertsPage() {
       osc1.type = 'sine';
       osc2.type = 'triangle';
       
-      // Futuristic two-tone drop ping
+      // Futuristic two-tone drop ping (Longer and Louder)
       osc1.frequency.setValueAtTime(880, ctx.currentTime);
-      osc1.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.3);
+      osc1.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 1.0);
       osc2.frequency.setValueAtTime(1760, ctx.currentTime);
-      osc2.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.3);
+      osc2.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 1.0);
       
       gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.5);
+      gainNode.gain.linearRampToValueAtTime(0.8, ctx.currentTime + 0.1);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
 
       osc1.connect(gainNode);
       osc2.connect(gainNode);
@@ -45,7 +45,7 @@ export default function AlertsPage() {
         osc1.stop();
         osc2.stop();
         ctx.close();
-      }, 600);
+      }, 1600);
     } catch (e) {
       console.error("Audio play failed:", e);
     }
