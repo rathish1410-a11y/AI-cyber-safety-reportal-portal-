@@ -1,13 +1,40 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '../lib/supabase';
-import { AlertCircle, MapPin, Loader2, RefreshCw } from 'lucide-react';
+import { AlertCircle, MapPin, Loader2, RefreshCw, Search } from 'lucide-react';
 import { Incident } from '../types/database';
+
+function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
+  const map = useMap();
+  map.setView(center, zoom);
+  return null;
+}
 
 export default function ThreatMap() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]);
+  const [mapZoom, setMapZoom] = useState(5);
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setMapCenter([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+        setMapZoom(12);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchMapData = async () => {
     setLoading(true);
@@ -59,13 +86,27 @@ export default function ThreatMap() {
               Tracking {incidents.length} active geo-located threat clusters across the region
             </p>
           </div>
-          <button 
-            onClick={fetchMapData}
-            className="cyber-btn flex items-center"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            REFRESH SCAN
-          </button>
+          <div className="flex gap-2">
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <input 
+                type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search location..." 
+                className="cyber-input py-2 text-sm w-48 md:w-64"
+              />
+              <button type="submit" className="cyber-btn py-2 px-3 flex items-center justify-center">
+                <Search className="w-4 h-4" />
+              </button>
+            </form>
+            <button 
+              onClick={fetchMapData}
+              className="cyber-btn flex items-center"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              REFRESH SCAN
+            </button>
+          </div>
         </div>
 
         <div className="cyber-frame bg-slate-900/50 p-1 relative overflow-hidden h-[65vh]">
@@ -78,12 +119,13 @@ export default function ThreatMap() {
 
           {/* India Center Coordinates: 20.5937, 78.9629 */}
           <MapContainer 
-            center={[20.5937, 78.9629]} 
-            zoom={5} 
+            center={mapCenter} 
+            zoom={mapZoom} 
             scrollWheelZoom={true}
             className="w-full h-full z-0 bg-dark-900"
             zoomControl={false}
           >
+            <ChangeView center={mapCenter} zoom={mapZoom} />
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
