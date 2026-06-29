@@ -15,11 +15,37 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (email: string) => {
+    // 1. Basic format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return "Please enter a valid email address.";
+    
+    // 2. Catch common typos in popular domains
+    const domain = email.split('@')[1].toLowerCase();
+    const commonTypos = ['gamil.com', 'gmaill.com', 'gmail.con', 'yaho.com', 'hotmail.con'];
+    if (commonTypos.includes(domain)) {
+      return `Did you mean ${domain.replace('gamil', 'gmail').replace('con', 'com').replace('yaho', 'yahoo')}?`;
+    }
+
+    // 3. Block known temporary/disposable email providers
+    const disposableDomains = ['mailinator.com', 'tempmail.com', '10minutemail.com', 'guerrillamail.com', 'yopmail.com'];
+    if (disposableDomains.includes(domain)) {
+      return "Disposable or temporary email addresses are not allowed for security reasons.";
+    }
+
+    return null; // Valid
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const emailError = validateEmail(email);
+    if (emailError) { setError(emailError); return; }
+
     if (password !== confirmPassword) { setError('Passwords do not match'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
+    
     setLoading(true);
     const { error } = await signUp(email, password, fullName, 'citizen');
     if (error) { setError(error.message || 'Failed to create account. Please try again.'); setLoading(false); }
