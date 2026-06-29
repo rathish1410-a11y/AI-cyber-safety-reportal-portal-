@@ -37,7 +37,7 @@ export default function AdminLogAnalyzer() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 pb-24 animate-in fade-in zoom-in duration-500">
+    <div className="max-w-6xl mx-auto space-y-6 animate-in fade-in zoom-in duration-500">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white mb-2 font-display tracking-wider uppercase flex items-center gap-3">
@@ -103,7 +103,7 @@ export default function AdminLogAnalyzer() {
           )}
 
           {result && !isAnalyzing && (
-            <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-6 flex-1 overflow-y-auto pr-2 pb-24 custom-scrollbar">
               <div className={`p-4 border rounded-lg flex items-start gap-4 ${getThreatColor(result.threatLevel)}`}>
                 {result.threatLevel === 'CRITICAL' || result.threatLevel === 'HIGH' ? (
                   <AlertTriangle className="w-8 h-8 shrink-0 animate-pulse" />
