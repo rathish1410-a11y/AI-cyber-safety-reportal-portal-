@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { AlertCircle, MapPin, Loader2, RefreshCw } from 'lucide-react';
-import { Incident } from '../../types/database';
+import { Incident } from '../types/database';
 
 export default function ThreatMap() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
