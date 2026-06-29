@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '../lib/supabase';
-import { AlertCircle, MapPin, Loader2, RefreshCw, Search, ArrowLeft } from 'lucide-react';
+import { AlertCircle, MapPin, Loader2, RefreshCw, Search, ArrowLeft, Filter } from 'lucide-react';
 import { Incident } from '../types/database';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
   const map = useMap();
@@ -13,11 +13,22 @@ function ChangeView({ center, zoom }: { center: [number, number], zoom: number }
 }
 
 export default function ThreatMap() {
+  const navigate = useNavigate();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [mapCenter, setMapCenter] = useState<[number, number]>([20.5937, 78.9629]);
   const [mapZoom, setMapZoom] = useState(5);
+  const [filterSeverity, setFilterSeverity] = useState<string>('all');
+
+  const handleBack = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (window.history.length > 2) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,10 +88,10 @@ export default function ThreatMap() {
       
       <div className="max-w-7xl mx-auto relative z-20">
         <div className="mb-6">
-          <Link to="/" className="inline-flex items-center text-cyber-400 hover:text-cyber-300 font-mono text-sm transition-colors">
+          <button onClick={handleBack} className="inline-flex items-center text-cyber-400 hover:text-cyber-300 font-mono text-sm transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            BACK TO HOME
-          </Link>
+            BACK
+          </button>
         </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
@@ -93,7 +104,7 @@ export default function ThreatMap() {
               Tracking {incidents.length} active geo-located threat clusters across the region
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <form onSubmit={handleSearch} className="flex gap-2">
               <input 
                 type="text" 
@@ -106,12 +117,25 @@ export default function ThreatMap() {
                 <Search className="w-4 h-4" />
               </button>
             </form>
+            <div className="flex items-center bg-dark-900 border border-[rgba(56,189,248,0.2)] rounded-lg px-3">
+              <Filter className="w-4 h-4 text-cyber-400 mr-2" />
+              <select 
+                value={filterSeverity} 
+                onChange={(e) => setFilterSeverity(e.target.value)}
+                className="bg-transparent text-slate-300 text-sm font-mono py-2 outline-none appearance-none cursor-pointer"
+              >
+                <option value="all">All Severities</option>
+                <option value="critical">Critical Only</option>
+                <option value="high">High & Above</option>
+                <option value="medium">Medium & Above</option>
+              </select>
+            </div>
             <button 
               onClick={fetchMapData}
               className="cyber-btn flex items-center"
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-              REFRESH SCAN
+              REFRESH
             </button>
           </div>
         </div>
@@ -137,7 +161,13 @@ export default function ThreatMap() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
-            {incidents.map((incident) => (
+            {incidents.filter(incident => {
+              if (filterSeverity === 'all') return true;
+              if (filterSeverity === 'critical') return incident.severity === 'critical';
+              if (filterSeverity === 'high') return incident.severity === 'critical' || incident.severity === 'high';
+              if (filterSeverity === 'medium') return incident.severity !== 'low';
+              return true;
+            }).map((incident) => (
               <CircleMarker
                 key={incident.id}
                 center={[incident.latitude!, incident.longitude!]}

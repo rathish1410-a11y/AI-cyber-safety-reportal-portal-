@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { IncidentType, Severity } from '../../types/database';
 import { analyzeIncidentWithGemini } from '../../utils/aiInsights';
+import LocationPickerMap from '../../components/LocationPickerMap';
 
 const incidentTypes: { value: IncidentType; label: string }[] = [
   { value: 'phishing', label: 'Phishing' },
@@ -443,10 +444,10 @@ export default function ReportIncident() {
           </h3>
           <div className="cyber-frame p-6 bg-slate-900/50">
             <p className="text-slate-400 mb-6 font-mono text-sm leading-relaxed max-w-2xl">
-              Providing your location helps authorities map active threat clusters in real-time. This is completely optional.
+              Providing your location helps authorities map active threat clusters in real-time. This is completely optional. You can also click on the map to pinpoint an exact location.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center mb-4">
               <button
                 type="button"
                 onClick={handleGetLocation}
@@ -473,6 +474,16 @@ export default function ReportIncident() {
                 </div>
               )}
             </div>
+
+            <LocationPickerMap 
+              latitude={latitude}
+              longitude={longitude}
+              onLocationSelect={(lat, lng) => {
+                setLatitude(lat);
+                setLongitude(lng);
+                setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+              }}
+            />
           </div>
         </div>
 
