@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMapEvents, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -13,6 +13,36 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: markerIcon2x,
   shadowUrl: markerShadow,
 });
+
+function UserLocationMarker() {
+  const [position, setPosition] = useState<[number, number] | null>(null);
+  const map = useMap();
+
+  useEffect(() => {
+    map.locate({ setView: false, maxZoom: 16 });
+    
+    const onLocationFound = (e: any) => {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    };
+    
+    map.on('locationfound', onLocationFound);
+    return () => {
+      map.off('locationfound', onLocationFound);
+    };
+  }, [map]);
+
+  return position === null ? null : (
+    <CircleMarker 
+      center={position} 
+      radius={8}
+      pathOptions={{ color: '#ffffff', fillColor: '#3b82f6', fillOpacity: 1, weight: 2 }}
+    >
+      <Popup className="cyber-popup">
+        <div className="p-1"><h3 className="font-bold text-slate-800">Your Location</h3></div>
+      </Popup>
+    </CircleMarker>
+  );
+}
 
 function MapPicker({ onLocationSelect, initialPos }: { onLocationSelect: (lat: number, lng: number) => void, initialPos: [number, number] | null }) {
   const [position, setPosition] = useState<[number, number] | null>(initialPos);
@@ -60,10 +90,8 @@ export default function LocationPickerMap({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
-        <MapPicker 
-          onLocationSelect={onLocationSelect} 
-          initialPos={latitude && longitude ? [latitude, longitude] : null} 
-        />
+        <UserLocationMarker />
+        <MapPicker onLocationSelect={onLocationSelect} initialPos={latitude && longitude ? [latitude, longitude] : null} />
       </MapContainer>
       <div className="absolute top-2 right-2 bg-dark-950/80 border border-[rgba(56,189,248,0.3)] text-cyber-400 text-xs px-3 py-1.5 rounded backdrop-blur z-[400] font-mono pointer-events-none shadow-[0_0_10px_rgba(56,189,248,0.1)]">
         Click on map to set location

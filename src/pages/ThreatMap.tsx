@@ -23,6 +23,43 @@ function AdminMapInteractions() {
   return null;
 }
 
+function UserLocationMarker() {
+  const [position, setPosition] = useState<[number, number] | null>(null);
+  const map = useMap();
+
+  useEffect(() => {
+    map.locate({ setView: false, maxZoom: 16 });
+    
+    const onLocationFound = (e: any) => {
+      setPosition([e.latlng.lat, e.latlng.lng]);
+    };
+    
+    map.on('locationfound', onLocationFound);
+    return () => {
+      map.off('locationfound', onLocationFound);
+    };
+  }, [map]);
+
+  return position === null ? null : (
+    <CircleMarker 
+      center={position} 
+      radius={8}
+      pathOptions={{ 
+        color: '#ffffff', 
+        fillColor: '#3b82f6', 
+        fillOpacity: 1, 
+        weight: 2 
+      }}
+    >
+      <Popup className="cyber-popup">
+        <div className="p-1">
+          <h3 className="font-bold text-slate-800">Your Current Location</h3>
+        </div>
+      </Popup>
+    </CircleMarker>
+  );
+}
+
 export default function ThreatMap() {
   const navigate = useNavigate();
   const { profile } = useAuth();
@@ -183,6 +220,8 @@ export default function ThreatMap() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
+            
+            <UserLocationMarker />
             {profile?.role === 'admin' && <AdminMapInteractions />}
             {incidents.filter(incident => {
               if (filterSeverity === 'all') return true;
