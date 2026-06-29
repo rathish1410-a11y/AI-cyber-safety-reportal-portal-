@@ -33,7 +33,13 @@ export default function AdminIncidents() {
     try {
       let query = supabase
         .from('incidents')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
       if (filterStatus) query = query.eq('status', filterStatus);
       if (filterSeverity) query = query.eq('severity', filterSeverity);
@@ -333,6 +339,7 @@ export default function AdminIncidents() {
                   <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Severity</th>
                   <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Status</th>
                   <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">AI Score</th>
+                  <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Reporter</th>
                   <th className="text-left px-6 py-4 text-sm font-mono font-medium text-cyber-400/70">Date</th>
                   <th className="px-6 py-4"></th>
                 </tr>
@@ -395,6 +402,9 @@ export default function AdminIncidents() {
                             </span>
                           </div>
                         )}
+                      </td>
+                      <td className="px-6 py-4 text-slate-300 font-mono text-sm">
+                        {incident.profiles?.full_name || incident.profiles?.email || 'Anonymous'}
                       </td>
                       <td className="px-6 py-4 text-slate-400 text-sm font-mono">
                         {new Date(incident.created_at).toLocaleDateString()}
@@ -499,6 +509,16 @@ export default function AdminIncidents() {
                         {getStatusBadge(selectedIncident.status).label}
                       </span>
                     </div>
+                  </div>
+
+                  <div className="bg-[rgba(56,189,248,0.02)] p-4 rounded-lg border border-[rgba(56,189,248,0.05)]">
+                    <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-1 uppercase tracking-wider">Reported By</h5>
+                    <p className="text-white font-mono text-sm">
+                      {selectedIncident.profiles?.full_name || 'Anonymous'} 
+                      {selectedIncident.profiles?.email && (
+                        <span className="text-slate-400 ml-2">({selectedIncident.profiles.email})</span>
+                      )}
+                    </p>
                   </div>
 
                   {/* Status Update */}

@@ -32,7 +32,13 @@ export default function AdminDashboard() {
     try {
       setError(null);
       const [incidentsRes, alertsRes] = await Promise.all([
-        supabase.from('incidents').select('*').order('created_at', { ascending: false }),
+        supabase.from('incidents').select(`
+          *,
+          profiles:user_id (
+            full_name,
+            email
+          )
+        `).order('created_at', { ascending: false }),
         supabase.from('alerts').select('*').eq('is_active', true).limit(5),
       ]);
       
@@ -341,6 +347,9 @@ export default function AdminDashboard() {
                     <p className="text-white font-medium text-sm">{incident.title}</p>
                     <p className="text-slate-500 text-xs font-mono">
                       {incident.incident_type.replaceAll('_', ' ')} <span className="text-slate-700">•</span> {incident.severity}
+                    </p>
+                    <p className="text-cyber-400/70 text-[10px] font-mono mt-1">
+                      By: {incident.profiles?.full_name || incident.profiles?.email || 'Anonymous'}
                     </p>
                   </div>
                 </div>

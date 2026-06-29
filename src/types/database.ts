@@ -35,6 +35,10 @@ export interface Incident {
   ai_suggested_category: string | null;
   created_at: string;
   updated_at: string;
+  profiles?: {
+    full_name: string | null;
+    email: string;
+  };
 }
 
 export interface Alert {
