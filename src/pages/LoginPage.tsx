@@ -3,20 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, Eye, EyeOff, AlertCircle, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// Only this account gets the role switcher
-const SUPER_EMAIL = 'rathish1410@gmail.com';
-
 export default function LoginPage() {
   const navigate = useNavigate();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [selectedRole, setSelectedRole] = useState<'admin' | 'citizen'>('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const isSuperAccount = email.toLowerCase() === SUPER_EMAIL;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,20 +22,8 @@ export default function LoginPage() {
       setError('Invalid email or password. Please try again.');
       setLoading(false);
     } else {
-      // For the super account, store chosen role override in sessionStorage
-      if (isSuperAccount) {
-        sessionStorage.setItem('role_override', selectedRole);
-      } else {
-        sessionStorage.removeItem('role_override');
-      }
-
-      // Navigate based on chosen role (super) or wait for profile (others)
       setTimeout(() => {
-        if (isSuperAccount) {
-          navigate(selectedRole === 'admin' ? '/admin' : '/dashboard');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
       }, 300);
     }
   };
@@ -134,41 +116,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Role switcher — only visible for the super account */}
-            {isSuperAccount && (
-              <div>
-                <label className="block text-xs font-mono uppercase tracking-wider mb-2" style={{ color: 'rgba(56,189,248,0.6)' }}>
-                  Login As
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { value: 'admin', label: 'ADMIN', icon: Shield },
-                    { value: 'citizen', label: 'CITIZEN', icon: User },
-                  ].map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setSelectedRole(value as 'admin' | 'citizen')}
-                      className="p-3 rounded-lg border transition-all flex flex-col items-center gap-1.5"
-                      style={selectedRole === value ? {
-                        background: 'rgba(56,189,248,0.08)',
-                        borderColor: 'rgba(56,189,248,0.5)',
-                        color: 'var(--cyber-blue)',
-                        boxShadow: '0 0 14px rgba(56,189,248,0.12)',
-                      } : {
-                        background: 'rgba(56,189,248,0.02)',
-                        borderColor: 'rgba(56,189,248,0.1)',
-                        color: '#475569',
-                      }}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="text-xs font-mono font-bold">{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
+            {/* Role switcher removed */}
             <button
               type="submit"
               disabled={loading}

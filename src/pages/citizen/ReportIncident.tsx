@@ -8,13 +8,13 @@ import { analyzeIncidentWithGemini } from '../../utils/aiInsights';
 import LocationPickerMap from '../../components/LocationPickerMap';
 
 const incidentTypes: { value: IncidentType; label: string }[] = [
-  { value: 'phishing', label: 'Phishing' },
-  { value: 'fraud', label: 'Fraud / Scam' },
-  { value: 'hacking', label: 'Hacking / Unauthorized Access' },
-  { value: 'harassment', label: 'Harassment / Cyberbullying' },
-  { value: 'identity_theft', label: 'Identity Theft' },
-  { value: 'malware', label: 'Malware / Ransomware' },
-  { value: 'other', label: 'Other' },
+  { value: 'apt_intrusion', label: 'Advanced Persistent Threat (APT)' },
+  { value: 'network_malware', label: 'Military Network Malware' },
+  { value: 'insider_threat', label: 'Insider Threat / Unauthorized Access' },
+  { value: 'comms_interception', label: 'Secure Comms Jamming / Interception' },
+  { value: 'zero_day', label: 'Zero-Day Vulnerability Exploit' },
+  { value: 'unauthorized_device', label: 'Rogue Device on Secure Node' },
+  { value: 'other', label: 'Other Security Incident' },
 ];
 
 const severityLevels: { value: Severity; label: string; description: string }[] = [
@@ -111,6 +111,12 @@ export default function ReportIncident() {
     e.preventDefault();
     setError(null);
     setLoading(true);
+
+    if (file && file.size > 10 * 1024 * 1024) {
+      setError('File is too large. Please select a file smaller than 10MB.');
+      setLoading(false);
+      return;
+    }
 
     try {
       // Calculate AI insights using Gemini

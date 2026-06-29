@@ -122,7 +122,7 @@ export default function CitizenOverview() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2 font-display tracking-wider uppercase">Citizen Dashboard</h1>
+          <h1 className="text-2xl font-bold text-white mb-2 font-display tracking-wider uppercase">Personnel Dashboard</h1>
           <p className="terminal-text text-slate-400 text-sm">Welcome back! Here's an overview of your incident reports.</p>
         </div>
         <div className="cyber-card flex items-center gap-2.5 px-4 py-2.5">
@@ -249,14 +249,14 @@ export default function CitizenOverview() {
                     <h3 className="text-white font-medium mb-1">{incident.title}</h3>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-slate-500 text-sm capitalize font-mono tracking-wide">
-                        {incident.incident_type.replace('_', ' ')}
+                        {incident.incident_type.replaceAll('_', ' ')}
                       </span>
                       <span className="text-[rgba(56,189,248,0.15)]">·</span>
                       <span className={`cyber-badge capitalize ${getSeverityBadge(incident.severity)}`}>
                         {incident.severity}
                       </span>
                       <span className={`cyber-badge capitalize ${getStatusBadge(incident.status)}`}>
-                        {incident.status.replace('_', ' ')}
+                        {incident.status.replaceAll('_', ' ')}
                       </span>
                     </div>
                   </div>

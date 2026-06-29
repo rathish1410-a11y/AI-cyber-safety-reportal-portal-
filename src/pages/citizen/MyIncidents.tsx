@@ -7,6 +7,7 @@ import { Incident, Message } from '../../types/database';
 
 export default function MyIncidents() {
   const { user } = useAuth();
+  const [allIncidents, setAllIncidents] = useState<Incident[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,14 +36,7 @@ export default function MyIncidents() {
       if (fetchError) throw fetchError;
       
       const result = data || [];
-      if (searchQuery) {
-        setIncidents(result.filter(i =>
-          i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          i.description.toLowerCase().includes(searchQuery.toLowerCase())
-        ));
-      } else {
-        setIncidents(result);
-      }
+      setAllIncidents(result);
     } catch (err) {
       console.error('Error fetching incidents:', err);
       setError('Failed to fetch incidents. Please try again.');
@@ -50,6 +44,18 @@ export default function MyIncidents() {
       setLoading(false);
     }
   }
+
+  // Client-side filtering
+  useEffect(() => {
+    if (searchQuery) {
+      setIncidents(allIncidents.filter(i =>
+        i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ));
+    } else {
+      setIncidents(allIncidents);
+    }
+  }, [allIncidents, searchQuery]);
 
   async function fetchMessages(incidentId: string) {
     try {
@@ -99,8 +105,11 @@ export default function MyIncidents() {
   }
 
 
-  useEffect(() => { if (user) fetchIncidents(); }, [user]);
-  useEffect(() => { if (user) fetchIncidents(); }, [filterStatus, searchQuery]);
+  useEffect(() => {
+    if (user) {
+      fetchIncidents();
+    }
+  }, [user, filterStatus]);
 
   const getSeverityBadge = (severity: string) => {
     const colors = {
@@ -215,7 +224,7 @@ export default function MyIncidents() {
                           <p className="text-white font-medium">{incident.title}</p>
                         </td>
                         <td className="px-6 py-4 text-slate-300 capitalize font-mono text-sm">
-                          {incident.incident_type.replace('_', ' ')}
+                          {incident.incident_type.replaceAll('_', ' ')}
                         </td>
                         <td className="px-6 py-4">
                           <span className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(incident.severity)}`}>
@@ -320,7 +329,7 @@ export default function MyIncidents() {
                   <h4 className="text-xl font-bold text-white mb-2">{selectedIncident.title}</h4>
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-slate-400 text-sm capitalize font-mono">
-                      {selectedIncident.incident_type.replace('_', ' ')}
+                      {selectedIncident.incident_type.replaceAll('_', ' ')}
                     </span>
                     <span className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(selectedIncident.severity)}`}>
                       {selectedIncident.severity}
@@ -361,7 +370,7 @@ export default function MyIncidents() {
                         <div>
                           <p className="text-slate-400 text-sm mb-1 font-mono">Suggested Category</p>
                           <p className="text-white capitalize">
-                            {selectedIncident.ai_suggested_category.replace('_', ' ')}
+                            {selectedIncident.ai_suggested_category.replaceAll('_', ' ')}
                           </p>
                         </div>
                       )}

@@ -6,7 +6,7 @@ import {
   FileWarning,
   AlertTriangle,
   User,
-  LogOut,
+  LogOut, TerminalSquare,
   Menu,
   X,
   LayoutDashboard,
@@ -41,7 +41,7 @@ export default function DashboardLayout() {
     { to: '/dashboard/profile', icon: User, label: 'Profile' },
   ];
 
-  const adminLinks = [
+  const adminLinks = [{ to: '/admin/log-analyzer', icon: TerminalSquare, label: 'Log Analyzer (ATI)', badge: 'AI' },
     { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/admin/incidents', icon: FileWarning, label: 'All Incidents' },
     { to: '/admin/analytics', icon: BarChart3, label: 'Analytics' },

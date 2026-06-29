@@ -58,13 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) console.error('Error fetching profile:', error);
       else if (data) {
-        // Allow role override for the super account (stored in sessionStorage on login)
-        const roleOverride = sessionStorage.getItem('role_override') as 'admin' | 'citizen' | null;
-        if (roleOverride) {
-          setProfile({ ...data, role: roleOverride });
-        } else {
-          setProfile(data);
-        }
+        setProfile(data);
       }
     } catch (err) {
       console.error('Profile fetch failed:', err);

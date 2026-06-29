@@ -107,7 +107,7 @@ export default function ProfilePage({ isAdmin = false }: ProfilePageProps) {
               <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
-                value={profile?.role?.charAt(0).toUpperCase() + profile?.role?.slice(1) || ''}
+                value={profile?.role ? profile.role.charAt(0).toUpperCase() + profile.role.slice(1) : ''}
                 disabled
                 className="w-full bg-slate-700/30 border border-[rgba(56,189,248,0.1)] rounded-lg pl-10 pr-4 py-3 text-slate-400 cursor-not-allowed"
               />

@@ -62,7 +62,7 @@ export default function AdminAnalytics() {
       return acc;
     }, {} as Record<string, number>)
   )
-    .map(([name, value]) => ({ name: name.replace('_', ' '), value }))
+    .map(([name, value]) => ({ name: name.replaceAll('_', ' '), value }))
     .sort((a, b) => b.value - a.value);
 
   const severityData = Object.entries(
@@ -78,7 +78,7 @@ export default function AdminAnalytics() {
       return acc;
     }, {} as Record<string, number>)
   ).map(([name, value]) => ({
-    name: name.replace('_', ' ').charAt(0).toUpperCase() + name.replace('_', ' ').slice(1),
+    name: name.replaceAll('_', ' ').charAt(0).toUpperCase() + name.replaceAll('_', ' ').slice(1),
     value,
   }));
 

@@ -12,7 +12,7 @@ interface Message {
   retryPayload?: { history: GeminiMessage[]; text: string };
 }
 
-const SYSTEM_INSTRUCTION = `You are CyberBot, an AI assistant on the CyberSafe India Portal — a government-grade cyber incident reporting platform for Indian citizens (SIH25183).
+const SYSTEM_INSTRUCTION = `You are CyberBot, an AI assistant on the CyberSafe India Portal — a government-grade cyber incident reporting platform for Ministry of Defence personnel (SIH25183).
 
 Your tone: Professional, clear, and warm — like a knowledgeable support officer who genuinely wants to help. Not robotic or cold. Not overly casual or buddy-like. Think: calm, confident, helpful.
 
@@ -121,15 +121,20 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
     setMessages(prev => [...prev, userMsg]);
     setInput('');
 
-    await callAI([], trimmed);
+    // Pass the actual conversation history
+    const history = messages.map(m => ({ role: m.role, text: m.text }));
+    await callAI(history, trimmed);
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); }
   };
 
+  const escapeHTML = (text: string) => 
+    text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+
   const formatText = (text: string) =>
-    text
+    escapeHTML(text)
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/\n/g, '<br/>');

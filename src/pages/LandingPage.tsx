@@ -22,7 +22,7 @@ export default function LandingPage() {
     { icon: Lock, title: 'Secure Reporting', description: 'Report cyber incidents safely with end-to-end encryption and privacy protection.' },
     { icon: AlertTriangle, title: 'Real-time Alerts', description: 'Stay informed with instant safety advisories and threat notifications.' },
     { icon: Brain, title: 'AI-Powered Analysis', description: 'Smart risk assessment and category suggestions for every incident reported.' },
-    { icon: Users, title: 'Community Safety', description: 'Join thousands of citizens working together to combat cyber threats.' },
+    { icon: Users, title: 'Community Safety', description: 'Join thousands of personnel working together to combat cyber threats.' },
   ];
 
   const stats = [
@@ -267,7 +267,7 @@ export default function LandingPage() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Create Account', desc: 'Sign up as a citizen to start reporting incidents' },
+              { step: '01', title: 'Create Account', desc: 'Sign up as defence personnel to start reporting incidents' },
               { step: '02', title: 'Submit Report', desc: 'Fill in incident details with screenshots and descriptions' },
               { step: '03', title: 'Track Progress', desc: 'Monitor status updates and receive AI-powered insights' },
             ].map((item, index) => (
@@ -289,7 +289,7 @@ export default function LandingPage() {
                 MAKE INDIA'S CYBERSPACE SAFER
               </h2>
               <p className="mb-8 max-w-xl mx-auto text-sm font-mono" style={{ color: 'rgba(56,189,248,0.6)' }}>
-                Join thousands of citizens who are actively contributing to cyber safety. Report incidents and help protect the community.
+                Join thousands of personnel who are actively contributing to cyber safety. Report incidents and help protect the community.
               </p>
               <Link
                 to={user ? '/dashboard' : '/signup'}

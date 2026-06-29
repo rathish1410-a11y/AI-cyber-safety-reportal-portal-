@@ -131,6 +131,54 @@ export default function AdminIncidents() {
     setUpdating(false);
   };
 
+  const updateIncidentSeverity = async (incidentId: string, newSeverity: Severity) => {
+    setUpdating(true);
+    setActionError(null);
+    const { error: updateError } = await supabase
+      .from('incidents')
+      .update({ severity: newSeverity, updated_at: new Date().toISOString() })
+      .eq('id', incidentId);
+
+    if (updateError) {
+      console.error('Update failed:', updateError);
+      setActionError('Failed to update incident severity. Please try again.');
+    } else {
+      setIncidents(
+        incidents.map((i) =>
+          i.id === incidentId ? { ...i, severity: newSeverity } : i
+        )
+      );
+      if (selectedIncident?.id === incidentId) {
+        setSelectedIncident({ ...selectedIncident, severity: newSeverity });
+      }
+    }
+    setUpdating(false);
+  };
+
+  const updateIncidentLocation = async (incidentId: string, lat: number, lng: number) => {
+    setUpdating(true);
+    setActionError(null);
+    const { error: updateError } = await supabase
+      .from('incidents')
+      .update({ latitude: lat, longitude: lng, updated_at: new Date().toISOString() })
+      .eq('id', incidentId);
+
+    if (updateError) {
+      console.error('Update failed:', updateError);
+      setActionError('Failed to update incident location. Please try again.');
+    } else {
+      setIncidents(
+        incidents.map((i) =>
+          i.id === incidentId ? { ...i, latitude: lat, longitude: lng } : i
+        )
+      );
+      if (selectedIncident?.id === incidentId) {
+        setSelectedIncident({ ...selectedIncident, latitude: lat, longitude: lng });
+      }
+    }
+    setUpdating(false);
+  };
+
   const getSeverityBadge = (severity: string) => {
     const colors = {
       low: 'bg-slate-500/20 text-slate-300 shadow-[0_0_6px_rgba(148,163,184,0.15)]',
@@ -228,7 +276,7 @@ export default function AdminIncidents() {
             <option value="">All Status</option>
             {statuses.map((s) => (
               <option key={s} value={s}>
-                {s.replace('_', ' ').charAt(0).toUpperCase() + s.replace('_', ' ').slice(1)}
+                {s.replaceAll('_', ' ').charAt(0).toUpperCase() + s.replaceAll('_', ' ').slice(1)}
               </option>
             ))}
           </select>
@@ -252,7 +300,7 @@ export default function AdminIncidents() {
             <option value="">All Types</option>
             {incidentTypes.map((t) => (
               <option key={t} value={t}>
-                {t.replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                {t.replaceAll('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
               </option>
             ))}
           </select>
@@ -302,7 +350,7 @@ export default function AdminIncidents() {
                         <p className="text-white font-medium">{incident.title}</p>
                       </td>
                       <td className="px-6 py-4 text-slate-300 capitalize font-mono text-sm">
-                        {incident.incident_type.replace('_', ' ')}
+                        {incident.incident_type.replaceAll('_', ' ')}
                       </td>
                       <td className="px-6 py-4">
                         <span
@@ -325,8 +373,8 @@ export default function AdminIncidents() {
                           >
                             {statuses.map((s) => (
                               <option key={s} value={s} className="bg-dark-900">
-                                {s.replace('_', ' ').charAt(0).toUpperCase() +
-                                  s.replace('_', ' ').slice(1)}
+                                {s.replaceAll('_', ' ').charAt(0).toUpperCase() +
+                                  s.replaceAll('_', ' ').slice(1)}
                               </option>
                             ))}
                           </select>
@@ -434,7 +482,7 @@ export default function AdminIncidents() {
                     <h4 className="text-xl font-bold text-white mb-2">{selectedIncident.title}</h4>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-slate-400 text-sm capitalize font-mono">
-                        {selectedIncident.incident_type.replace('_', ' ')}
+                        {selectedIncident.incident_type.replaceAll('_', ' ')}
                       </span>
                       <span
                         className={`cyber-badge text-xs px-2 py-1 rounded capitalize ${getSeverityBadge(
@@ -474,7 +522,7 @@ export default function AdminIncidents() {
                               : 'bg-dark-800 text-slate-300 border border-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.05)] hover:text-cyber-400'
                           }`}
                         >
-                          {s.replace('_', ' ').charAt(0).toUpperCase() + s.replace('_', ' ').slice(1)}
+                          {s.replaceAll('_', ' ').charAt(0).toUpperCase() + s.replaceAll('_', ' ').slice(1)}
                         </button>
                       ))}
                     </div>
@@ -613,7 +661,7 @@ export default function AdminIncidents() {
                           <div>
                             <p className="text-slate-400 text-sm font-mono mb-1">Suggested Category</p>
                             <p className="text-white capitalize font-mono">
-                              {selectedIncident.ai_suggested_category.replace('_', ' ')}
+                              {selectedIncident.ai_suggested_category.replaceAll('_', ' ')}
                             </p>
                           </div>
                         )}
@@ -664,7 +712,7 @@ export default function AdminIncidents() {
                   <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 custom-scrollbar">
                     {messages.length === 0 ? (
                       <div className="text-center py-8 text-slate-500 font-mono text-sm">
-                        No messages yet. Send a message to the citizen.
+                        No messages yet. Send a message to the personnel.
                       </div>
                     ) : (
                       messages.map((msg) => (
@@ -675,7 +723,7 @@ export default function AdminIncidents() {
                           }`}
                         >
                           <span className="text-[10px] text-slate-500 font-mono mb-1 uppercase tracking-wider">
-                            {msg.sender_role === 'admin' ? 'You (Admin)' : 'Citizen'} • {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {msg.sender_role === 'admin' ? 'You (Admin)' : 'Personnel'} • {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                           <div
                             className={`p-3 rounded-lg text-sm ${
@@ -695,7 +743,7 @@ export default function AdminIncidents() {
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      placeholder="Type a message to the citizen..."
+                      placeholder="Type a message to the personnel..."
                       className="cyber-input w-full pr-12 py-3 bg-dark-900"
                       disabled={sendingMessage}
                     />

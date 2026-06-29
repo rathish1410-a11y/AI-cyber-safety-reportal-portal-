@@ -28,11 +28,17 @@ function UserLocationMarker() {
   const map = useMap();
 
   useEffect(() => {
-    // watch: true keeps tracking, setView: true flies to the location when found
-    map.locate({ setView: true, maxZoom: 14, watch: true, enableHighAccuracy: true });
+    // watch: true keeps tracking
+    map.locate({ setView: false, maxZoom: 14, watch: true, enableHighAccuracy: true });
     
+    let hasFlown = false;
+
     const onLocationFound = (e: any) => {
       setPosition([e.latlng.lat, e.latlng.lng]);
+      if (!hasFlown) {
+        map.flyTo(e.latlng, 14);
+        hasFlown = true;
+      }
     };
 
     const onLocationError = (e: any) => {
@@ -257,9 +263,9 @@ export default function ThreatMap() {
                     <h3 className="font-bold text-slate-800 mb-2 truncate">{incident.title}</h3>
                     <div className="text-xs text-slate-600 mb-2 flex items-center">
                       <AlertCircle className="w-3 h-3 mr-1" />
-                      {incident.incident_type.replace('_', ' ').toUpperCase()}
+                      {incident.incident_type.replaceAll('_', ' ').toUpperCase()}
                     </div>
-                    {incident.ai_risk_score && (
+                    {incident.ai_risk_score != null && (
                       <div className="text-xs bg-slate-100 rounded px-2 py-1 inline-block font-mono">
                         AI Risk Score: {incident.ai_risk_score}%
                       </div>

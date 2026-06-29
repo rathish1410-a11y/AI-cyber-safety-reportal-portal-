@@ -90,7 +90,7 @@ export default function AdminDashboard() {
 
   const typeData = Object.entries(
     incidents.reduce((acc, i) => { acc[i.incident_type] = (acc[i.incident_type] || 0) + 1; return acc; }, {} as Record<string, number>)
-  ).map(([name, value]) => ({ name: name.replace('_', ' '), value }));
+  ).map(([name, value]) => ({ name: name.replaceAll('_', ' '), value }));
 
   const severityData = Object.entries(
     incidents.reduce((acc, i) => { acc[i.severity] = (acc[i.severity] || 0) + 1; return acc; }, {} as Record<string, number>)
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-white font-medium text-sm">{incident.title}</p>
                     <p className="text-slate-500 text-xs font-mono">
-                      {incident.incident_type.replace('_', ' ')} <span className="text-slate-700">•</span> {incident.severity}
+                      {incident.incident_type.replaceAll('_', ' ')} <span className="text-slate-700">•</span> {incident.severity}
                     </p>
                   </div>
                 </div>
@@ -360,7 +360,7 @@ export default function AdminDashboard() {
                     border: '1px solid rgba(52,211,153,0.2)',
                   }}
                 >
-                  {incident.status.replace('_', ' ')}
+                  {incident.status.replaceAll('_', ' ')}
                 </span>
               </div>
             ))}

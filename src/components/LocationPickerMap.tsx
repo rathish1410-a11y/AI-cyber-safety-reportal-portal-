@@ -19,11 +19,17 @@ function UserLocationMarker() {
   const map = useMap();
 
   useEffect(() => {
-    // watch: true keeps tracking, setView: true flies to the location when found
-    map.locate({ setView: true, maxZoom: 14, watch: true, enableHighAccuracy: true });
+    // watch: true keeps tracking
+    map.locate({ setView: false, maxZoom: 14, watch: true, enableHighAccuracy: true });
     
+    let hasFlown = false;
+
     const onLocationFound = (e: any) => {
       setPosition([e.latlng.lat, e.latlng.lng]);
+      if (!hasFlown) {
+        map.flyTo(e.latlng, 14);
+        hasFlown = true;
+      }
     };
 
     const onLocationError = (e: any) => {

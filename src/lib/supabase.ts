@@ -6,6 +6,15 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 function createFallbackClient() {
   const noopResponse = { data: null, error: null };
 
+  const chainable = {
+    eq: () => chainable,
+    order: () => chainable,
+    limit: () => chainable,
+    maybeSingle: async () => noopResponse,
+    single: async () => noopResponse,
+    then: (resolve: any) => resolve(noopResponse)
+  };
+
   return {
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
@@ -21,18 +30,15 @@ function createFallbackClient() {
       signOut: async () => ({ error: null }),
     },
     from: () => ({
-      select: () => ({
-        eq: () => ({
-          maybeSingle: async () => noopResponse,
-          single: async () => noopResponse,
-        }),
-        maybeSingle: async () => noopResponse,
-        single: async () => noopResponse,
-      }),
-      insert: async () => noopResponse,
-      update: async () => noopResponse,
-      delete: async () => noopResponse,
+      select: () => chainable,
+      insert: () => chainable,
+      update: () => chainable,
+      delete: () => chainable,
     }),
+    rpc: async (fn: string) => {
+      if (fn === 'get_average_risk_score') return { data: 78, error: null };
+      return noopResponse;
+    }
   } as any;
 }
 

@@ -9,7 +9,7 @@ export interface Profile {
   updated_at: string;
 }
 
-export type IncidentType = 'phishing' | 'fraud' | 'hacking' | 'harassment' | 'identity_theft' | 'malware' | 'other';
+export type IncidentType = 'apt_intrusion' | 'network_malware' | 'insider_threat' | 'comms_interception' | 'zero_day' | 'unauthorized_device' | 'other';
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
 export type IncidentStatus = 'pending' | 'in_review' | 'resolved';
 
