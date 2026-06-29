@@ -16,6 +16,7 @@ import {
   Lock,
   ScanSearch,
   Bot,
+  MapPin,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import CyberBot from './CyberBot';
@@ -36,6 +37,7 @@ export default function DashboardLayout() {
     { to: '/dashboard/incidents', icon: FileWarning, label: 'My Reports' },
     { to: '/dashboard/phishing-detector', icon: ScanSearch, label: 'Phishing Detector', badge: 'AI' },
     { to: '/alerts', icon: AlertTriangle, label: 'Safety Alerts' },
+    { to: '/threat-map', icon: MapPin, label: 'Threat Map', badge: 'LIVE' },
     { to: '/dashboard/profile', icon: User, label: 'Profile' },
   ];
 
@@ -46,6 +48,7 @@ export default function DashboardLayout() {
     { to: '/admin/ai-assistant', icon: Bot, label: 'AI Assistant', badge: 'NEW' },
     { to: '/admin/alerts', icon: AlertTriangle, label: 'Manage Alerts' },
     { to: '/admin/phishing-detector', icon: ScanSearch, label: 'Phishing Detector', badge: 'AI' },
+    { to: '/threat-map', icon: MapPin, label: 'Threat Map', badge: 'LIVE' },
     { to: '/admin/profile', icon: User, label: 'Profile' },
   ];
 

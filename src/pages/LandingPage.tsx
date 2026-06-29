@@ -64,6 +64,10 @@ export default function LandingPage() {
               <div className="hidden md:flex items-center gap-6">
                 <a href="#features" className="text-slate-400 hover:text-white transition-colors text-sm font-mono tracking-wider">FEATURES</a>
                 <a href="#stats" className="text-slate-400 hover:text-white transition-colors text-sm font-mono tracking-wider">STATS</a>
+                <Link to="/threat-map" className="text-neon-red hover:text-white transition-colors text-sm font-mono tracking-wider animate-pulse flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-neon-red mr-1.5"></span>
+                  THREAT MAP
+                </Link>
               </div>
 
               {/* Authentication Actions - Mobile & Desktop */}
@@ -132,6 +136,13 @@ export default function LandingPage() {
                   className="text-slate-400 hover:text-cyber-400 transition-colors text-sm font-mono tracking-wider ml-2"
                 >
                   VIEW ALERTS
+                </Link>
+                <Link
+                  to="/threat-map"
+                  className="text-slate-400 hover:text-cyber-400 transition-colors text-sm font-mono tracking-wider ml-2 flex items-center"
+                >
+                  <span className="w-2 h-2 rounded-full bg-neon-red shadow-[0_0_8px_#ff0040] mr-2 animate-pulse"></span>
+                  LIVE THREAT MAP
                 </Link>
               </div>
             </div>

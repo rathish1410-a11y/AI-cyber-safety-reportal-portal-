@@ -28,6 +28,8 @@ export interface Incident {
   attacker_ip: string | null;
   malicious_url: string | null;
   crypto_wallet: string | null;
+  latitude: number | null;
+  longitude: number | null;
   status: IncidentStatus;
   ai_risk_score: number | null;
   ai_suggested_category: string | null;

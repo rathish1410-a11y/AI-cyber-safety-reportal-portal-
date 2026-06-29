@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle, Upload, Brain, Shield } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload, Brain, Shield, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import { IncidentType, Severity } from '../../types/database';
@@ -40,6 +40,10 @@ export default function ReportIncident() {
   const [attackerIp, setAttackerIp] = useState('');
   const [maliciousUrl, setMaliciousUrl] = useState('');
   const [cryptoWallet, setCryptoWallet] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [locationName, setLocationName] = useState('');
+  const [isLocating, setIsLocating] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Submitting...');
@@ -61,6 +65,28 @@ export default function ReportIncident() {
     } else {
       setFilePreview(null);
     }
+  };
+
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      return;
+    }
+    
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLatitude(position.coords.latitude);
+        setLongitude(position.coords.longitude);
+        setLocationName(`${position.coords.latitude.toFixed(4)}, ${position.coords.longitude.toFixed(4)}`);
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error('Error getting location:', error);
+        setError('Failed to get location. Please allow location access or try again.');
+        setIsLocating(false);
+      }
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -120,6 +146,8 @@ export default function ReportIncident() {
         attacker_ip: attackerIp || null,
         malicious_url: maliciousUrl || null,
         crypto_wallet: cryptoWallet || null,
+        latitude: latitude,
+        longitude: longitude,
         file_url: fileUrl,
         ai_risk_score: riskScore,
         ai_suggested_category: suggestedCategory,
@@ -404,6 +432,47 @@ export default function ReportIncident() {
                 />
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Location Section */}
+        <div className="mb-10">
+          <h3 className="text-xl font-mono text-white mb-6 flex items-center">
+            <MapPin className="w-5 h-5 mr-3 text-cyber-400" />
+            03. Incident Location (Optional)
+          </h3>
+          <div className="cyber-frame p-6 bg-slate-900/50">
+            <p className="text-slate-400 mb-6 font-mono text-sm leading-relaxed max-w-2xl">
+              Providing your location helps authorities map active threat clusters in real-time. This is completely optional.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+              <button
+                type="button"
+                onClick={handleGetLocation}
+                disabled={isLocating}
+                className="cyber-btn flex items-center justify-center min-w-[200px]"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Locating...
+                  </>
+                ) : (
+                  <>
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Share Current Location
+                  </>
+                )}
+              </button>
+              
+              {locationName && (
+                <div className="flex items-center text-cyber-400 bg-cyber-500/10 px-4 py-3 rounded border border-cyber-400/20 font-mono text-sm">
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Coordinates captured: {locationName}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

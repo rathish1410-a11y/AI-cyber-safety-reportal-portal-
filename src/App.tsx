@@ -16,6 +16,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 
 // Public Pages
 import ReportAnonymous from './pages/ReportAnonymous';
+import ThreatMap from './pages/ThreatMap';
 
 // Citizen Pages
 import CitizenOverview from './pages/citizen/CitizenOverview';
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/report-anonymous" element={<ReportAnonymous />} />
+        <Route path="/threat-map" element={<ThreatMap />} />
 
         {/* Citizen Routes */}
         <Route
