@@ -103,7 +103,7 @@ export default function AdminLogAnalyzer() {
           )}
 
           {result && !isAnalyzing && (
-            <div className="space-y-6 flex-1 overflow-y-auto pr-2 pb-24 custom-scrollbar">
+            <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
               <div className={`p-4 border rounded-lg flex items-start gap-4 ${getThreatColor(result.threatLevel)}`}>
                 {result.threatLevel === 'CRITICAL' || result.threatLevel === 'HIGH' ? (
                   <AlertTriangle className="w-8 h-8 shrink-0 animate-pulse" />
@@ -139,6 +139,8 @@ export default function AdminLogAnalyzer() {
                   {result.anomaliesDetected ? "Anomalous patterns confirmed in dataset." : "No significant deviations detected."}
                 </span>
               </div>
+              {/* Invisible spacer to prevent chatbot overlap */}
+              <div className="h-24 w-full shrink-0"></div>
             </div>
           )}
         </div>
