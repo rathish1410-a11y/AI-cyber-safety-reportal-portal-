@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle, MessageSquare, Send } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle, MessageSquare, Send, Plus } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Incident, IncidentStatus, IncidentType, Severity, Message } from '../../types/database';
 import { useAuth } from '../../context/AuthContext';
@@ -189,13 +190,19 @@ export default function AdminIncidents() {
       <div className="scanline-overlay" />
 
       {/* Header */}
-      <div className="relative mb-8">
-        <h1 className="font-display text-2xl font-bold tracking-wider text-neon-cyan mb-2">
-          INCIDENT MANAGEMENT
-        </h1>
-        <p className="font-mono text-sm text-slate-400">
-          View and manage all reported incidents
-        </p>
+      <div className="relative mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="font-display text-2xl font-bold tracking-wider text-neon-cyan mb-2">
+            INCIDENT MANAGEMENT
+          </h1>
+          <p className="font-mono text-sm text-slate-400">
+            View and manage all reported incidents
+          </p>
+        </div>
+        <Link to="/admin/report" className="cyber-btn flex items-center px-4 py-2">
+          <Plus className="w-4 h-4 mr-2" />
+          REPORT THREAT
+        </Link>
       </div>
 
       {/* Filters */}

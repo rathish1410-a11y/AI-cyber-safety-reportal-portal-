@@ -87,6 +87,7 @@ function AppRoutes() {
           }
         >
           <Route index element={<AdminDashboard />} />
+          <Route path="report" element={<ReportIncident />} />
           <Route path="incidents" element={<AdminIncidents />} />
           <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="alerts" element={<AdminAlerts />} />

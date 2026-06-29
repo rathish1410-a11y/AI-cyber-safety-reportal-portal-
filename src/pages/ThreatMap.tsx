@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '../lib/supabase';
-import { AlertCircle, MapPin, Loader2, RefreshCw, Search } from 'lucide-react';
+import { AlertCircle, MapPin, Loader2, RefreshCw, Search, ArrowLeft } from 'lucide-react';
 import { Incident } from '../types/database';
+import { Link } from 'react-router-dom';
 
 function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
   const map = useMap();
@@ -75,6 +76,12 @@ export default function ThreatMap() {
       <div className="scanline-overlay z-10 pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-20">
+        <div className="mb-6">
+          <Link to="/" className="inline-flex items-center text-cyber-400 hover:text-cyber-300 font-mono text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            BACK TO HOME
+          </Link>
+        </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-display font-bold text-white tracking-wider flex items-center">

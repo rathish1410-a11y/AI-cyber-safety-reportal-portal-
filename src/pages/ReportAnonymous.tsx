@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AlertCircle, CheckCircle, Upload, Shield, MapPin, Loader2 } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
+import { AlertCircle, CheckCircle, Upload, Shield, MapPin, Loader2, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { IncidentType, Severity } from '../types/database';
 import { analyzeIncidentWithGemini } from '../utils/aiInsights';
@@ -195,6 +195,13 @@ export default function ReportAnonymous() {
     <div className="min-h-screen bg-dark-950 pt-24 pb-12">
       <div className="p-6 lg:p-8 max-w-4xl mx-auto relative">
         <div className="scanline-overlay" />
+
+        <div className="mb-6 relative z-10">
+          <Link to="/" className="inline-flex items-center text-cyber-400 hover:text-cyber-300 font-mono text-sm transition-colors">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            BACK TO HOME
+          </Link>
+        </div>
 
         <div className="mb-8 relative z-10">
           <h1 className="text-3xl font-display font-bold text-white mb-2 tracking-widest flex items-center gap-3">
