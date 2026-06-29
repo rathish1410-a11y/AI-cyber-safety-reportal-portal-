@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AlertCircle, CheckCircle, Upload, Brain, Shield, MapPin, Loader2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
@@ -41,9 +41,26 @@ export default function ReportIncident() {
   const [attackerIp, setAttackerIp] = useState('');
   const [maliciousUrl, setMaliciousUrl] = useState('');
   const [cryptoWallet, setCryptoWallet] = useState('');
-  const [latitude, setLatitude] = useState<number | null>(null);
-  const [longitude, setLongitude] = useState<number | null>(null);
-  const [locationName, setLocationName] = useState('');
+  const [searchParams] = useSearchParams();
+  
+  const [latitude, setLatitude] = useState<number | null>(() => {
+    const lat = searchParams.get('lat');
+    return lat ? parseFloat(lat) : null;
+  });
+  const [longitude, setLongitude] = useState<number | null>(() => {
+    const lng = searchParams.get('lng');
+    return lng ? parseFloat(lng) : null;
+  });
+  
+  const [locationName, setLocationName] = useState(() => {
+    const lat = searchParams.get('lat');
+    const lng = searchParams.get('lng');
+    if (lat && lng) {
+      return `${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)}`;
+    }
+    return '';
+  });
+  
   const [isLocating, setIsLocating] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);

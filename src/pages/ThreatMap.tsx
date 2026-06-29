@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { supabase } from '../lib/supabase';
-import { AlertCircle, MapPin, Loader2, RefreshCw, Search, ArrowLeft, Filter } from 'lucide-react';
+import { AlertCircle, MapPin, Loader2, RefreshCw, Search, ArrowLeft, Filter, Plus } from 'lucide-react';
 import { Incident } from '../types/database';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 function ChangeView({ center, zoom }: { center: [number, number], zoom: number }) {
   const map = useMap();
@@ -12,8 +13,19 @@ function ChangeView({ center, zoom }: { center: [number, number], zoom: number }
   return null;
 }
 
+function AdminMapInteractions() {
+  const navigate = useNavigate();
+  useMapEvents({
+    dblclick(e) {
+      navigate(`/admin/report?lat=${e.latlng.lat}&lng=${e.latlng.lng}`);
+    }
+  });
+  return null;
+}
+
 export default function ThreatMap() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -87,11 +99,21 @@ export default function ThreatMap() {
       <div className="scanline-overlay z-10 pointer-events-none" />
       
       <div className="max-w-7xl mx-auto relative z-20">
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <button onClick={handleBack} className="inline-flex items-center text-cyber-400 hover:text-cyber-300 font-mono text-sm transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" />
             BACK
           </button>
+          
+          {profile?.role === 'admin' && (
+            <Link 
+              to="/admin/report" 
+              className="cyber-btn px-4 py-2 flex items-center bg-cyber-500/10"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              ADD THREAT
+            </Link>
+          )}
         </div>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
@@ -140,6 +162,13 @@ export default function ThreatMap() {
           </div>
         </div>
 
+        {profile?.role === 'admin' && (
+          <div className="mb-4 bg-cyber-500/10 border border-cyber-400/20 text-cyber-400 text-sm px-4 py-2 rounded-lg font-mono flex items-center">
+            <Plus className="w-4 h-4 mr-2" />
+            Admin Mode: Double-click anywhere on the map to instantly report a threat at that location.
+          </div>
+        )}
+
         <div className="cyber-frame bg-slate-900/50 p-1 relative overflow-hidden h-[65vh]">
           {loading ? (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-dark-950/80 z-[400] backdrop-blur-sm">
@@ -161,6 +190,7 @@ export default function ThreatMap() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
+            {profile?.role === 'admin' && <AdminMapInteractions />}
             {incidents.filter(incident => {
               if (filterSeverity === 'all') return true;
               if (filterSeverity === 'critical') return incident.severity === 'critical';
