@@ -28,15 +28,23 @@ function UserLocationMarker() {
   const map = useMap();
 
   useEffect(() => {
-    map.locate({ setView: false, maxZoom: 16 });
+    // watch: true keeps tracking, setView: true flies to the location when found
+    map.locate({ setView: true, maxZoom: 14, watch: true, enableHighAccuracy: true });
     
     const onLocationFound = (e: any) => {
       setPosition([e.latlng.lat, e.latlng.lng]);
     };
+
+    const onLocationError = (e: any) => {
+      console.error("Location access error:", e.message);
+    };
     
     map.on('locationfound', onLocationFound);
+    map.on('locationerror', onLocationError);
     return () => {
       map.off('locationfound', onLocationFound);
+      map.off('locationerror', onLocationError);
+      map.stopLocate(); // stop watching when unmounted
     };
   }, [map]);
 
@@ -48,7 +56,7 @@ function UserLocationMarker() {
         color: '#ffffff', 
         fillColor: '#3b82f6', 
         fillOpacity: 1, 
-        weight: 2 
+        weight: 3 
       }}
     >
       <Popup className="cyber-popup">
