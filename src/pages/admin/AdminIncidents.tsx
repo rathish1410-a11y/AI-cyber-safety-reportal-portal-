@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle, MessageSquare, Send, Plus } from 'lucide-react';
+import { Search, Filter, Brain, Eye, X, ChevronDown, AlertCircle, MessageSquare, Send, Plus, MapPin } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Incident, IncidentStatus, IncidentType, Severity, Message } from '../../types/database';
 import { useAuth } from '../../context/AuthContext';
+import LocationPickerMap from '../../components/LocationPickerMap';
 
 export default function AdminIncidents() {
   const { user } = useAuth();
@@ -479,7 +480,42 @@ export default function AdminIncidents() {
                     </div>
                   </div>
 
-                  <div>
+                  {/* Severity Update */}
+                  <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4 mt-4">
+                    <p className="text-slate-300 text-sm mb-3 font-mono">Update Severity</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(['low', 'medium', 'high', 'critical'] as Severity[]).map((sev) => (
+                        <button
+                          key={sev}
+                          onClick={() => updateIncidentSeverity(selectedIncident.id, sev)}
+                          disabled={updating}
+                          className={`cyber-btn px-4 py-2 rounded-lg text-sm font-medium font-mono transition-all ${
+                            selectedIncident.severity === sev
+                              ? 'bg-cyber-400/20 text-cyber-400 border border-cyber-400 shadow-[0_0_10px_rgba(56,189,248,0.2)]'
+                              : 'bg-dark-800 text-slate-300 border border-[rgba(56,189,248,0.1)] hover:bg-[rgba(56,189,248,0.05)] hover:text-cyber-400'
+                          }`}
+                        >
+                          {sev.charAt(0).toUpperCase() + sev.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Location Update */}
+                  <div className="bg-[rgba(56,189,248,0.03)] border border-[rgba(56,189,248,0.1)] rounded-lg p-4 mt-4">
+                    <p className="text-slate-300 text-sm mb-3 font-mono flex items-center">
+                      <MapPin className="w-4 h-4 mr-2 text-cyber-400" />
+                      Update Location
+                    </p>
+                    <p className="text-slate-400 text-xs font-mono mb-2">Click on the map to instantly update the threat's location.</p>
+                    <LocationPickerMap 
+                      latitude={selectedIncident.latitude}
+                      longitude={selectedIncident.longitude}
+                      onLocationSelect={(lat, lng) => updateIncidentLocation(selectedIncident.id, lat, lng)}
+                    />
+                  </div>
+
+                  <div className="mt-6">
                     <h5 className="text-sm font-mono font-medium text-cyber-400/70 mb-2">Description</h5>
                     <p className="text-slate-300 whitespace-pre-wrap">{selectedIncident.description}</p>
                   </div>
