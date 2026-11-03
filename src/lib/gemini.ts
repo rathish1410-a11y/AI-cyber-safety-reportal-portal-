@@ -87,7 +87,7 @@ export async function askGemini(
     if (err?.message?.includes('429')) {
       return '⚠️ Rate limit hit. Please wait 30 seconds and try again.';
     }
-    return 'AI is temporarily unavailable. Please try again.';
+    return '⚠️ AI service is busy. Please try again in a few moments, or dial Helpline 1930 for immediate cyber fraud assistance.';
   }
 }
 
@@ -119,7 +119,14 @@ export async function askGeminiChat(
     if (err?.message?.includes('429')) {
       return '⚠️ Rate limit hit. Free tier allows 15 requests/min. Please wait 30 seconds and try again.';
     }
-    return '⚠️ AI temporarily unavailable. Please try again.';
+    return (
+      `⚠️ **AI Cloud is currently experiencing heavy traffic.**\n\n` +
+      `Here is emergency **Immediate Incident First-Aid** while connection reconnects:\n` +
+      `• **Financial / UPI Loss:** Call \`1930\` immediately or visit **cybercrime.gov.in** within the golden hour to freeze the beneficiary account.\n` +
+      `• **Suspicious APK / Download:** Immediately turn on Airplane Mode, restart phone in Safe Mode, and uninstall the unauthorized application.\n` +
+      `• **Account Compromised:** Log out of all active sessions from account security settings and reset passwords with 2FA enabled.\n\n` +
+      `👉 Please retry in a few moments, or submit your report via the **Report Incident** sidebar tab for immediate administrative review.`
+    );
   }
 }
 

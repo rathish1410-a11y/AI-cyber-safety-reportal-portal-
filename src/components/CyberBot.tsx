@@ -92,25 +92,38 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
 
   const callAI = async (chatHistory: GeminiMessage[], text: string) => {
     setLoading(true);
-    const response = await askGeminiChat(chatHistory, text, SYSTEM_INSTRUCTION);
+    try {
+      const response = await askGeminiChat(chatHistory, text, SYSTEM_INSTRUCTION);
 
-    if (response.includes('Rate limit') || response.includes('429')) {
-      // Add rate limit message and auto-retry after 30s
-      const retryMsg: Message = {
-        role: 'model',
-        text: '⏳ Rate limit reached (free tier: 15 req/min). Auto-retrying in **30 seconds**...',
-        timestamp: new Date(),
-        isError: true,
-        retryPayload: { history: chatHistory, text },
-      };
-      setMessages(prev => [...prev, retryMsg]);
-      setLoading(false);
-      startCountdown(30, () => {
-        setMessages(prev => prev.filter(m => m.retryPayload?.text !== text));
-        callAI(chatHistory, text);
-      });
-    } else {
-      setMessages(prev => [...prev, { role: 'model', text: response, timestamp: new Date() }]);
+      if (response.includes('Rate limit') || response.includes('429')) {
+        // Add rate limit message and auto-retry after 30s
+        const retryMsg: Message = {
+          role: 'model',
+          text: '⏳ Rate limit reached (free tier: 15 req/min). Auto-retrying in **30 seconds**...',
+          timestamp: new Date(),
+          isError: true,
+          retryPayload: { history: chatHistory, text },
+        };
+        setMessages(prev => [...prev, retryMsg]);
+        setLoading(false);
+        startCountdown(30, () => {
+          setMessages(prev => prev.filter(m => m.retryPayload?.text !== text));
+          callAI(chatHistory, text);
+        });
+      } else {
+        setMessages(prev => [...prev, { role: 'model', text: response, timestamp: new Date() }]);
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error('[callAI error]:', err);
+      setMessages(prev => [
+        ...prev,
+        {
+          role: 'model',
+          text: '⚠️ An unexpected network issue occurred while communicating with the AI. Please try again.',
+          timestamp: new Date(),
+        },
+      ]);
       setLoading(false);
     }
   };
@@ -120,17 +133,24 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
     if (!trimmed || loading || countdown > 0) return;
 
     const userMsg: Message = { role: 'user', text: trimmed, timestamp: new Date() };
-    setMessages(prev => [...prev, userMsg]);
+    const currentMessages = [...messages, userMsg];
+    setMessages(currentMessages);
     setInput('');
-    // Pass conversation history with proper Gemini parts structure
-    const chatHistory: GeminiMessage[] = nextMessages
-      .filter(m => !m.isError)
-      .slice(0, -1)
+
+    // Prepare previous history for Gemini (excluding error messages)
+    const chatHistory: GeminiMessage[] = messages
+      .filter(m => !m.isError && m.text && m.text.trim().length > 0)
       .map(m => ({
         role: m.role,
         parts: [{ text: m.text }],
       }));
-    await callAI(chatHistory, trimmed);
+
+    try {
+      await callAI(chatHistory, trimmed);
+    } catch (err) {
+      console.error('sendMessage error:', err);
+      setLoading(false);
+    }
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
