@@ -1,10 +1,14 @@
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-// gemini-2.5-flash confirmed working — others are rate-limited on free tier
+// Resilient multi-tier model fallback chain (verified online)
 const MODELS = [
+  'gemini-3.5-flash',
+  'gemini-flash-lite-latest',
+  'gemini-3-flash-preview',
   'gemini-2.5-flash',
+  'gemini-3.8-flash',
+  'gemini-3.1-flash-lite',
   'gemini-flash-latest',
-  'gemini-2.0-flash',
 ];
 
 export interface GeminiMessage {
@@ -21,7 +25,7 @@ async function callGeminiWithModel(
 
   const body: any = {
     contents,
-    generationConfig: { temperature: 0.7, maxOutputTokens: 1024 },
+    generationConfig: { temperature: 0.7, maxOutputTokens: 2048 },
   };
 
   if (systemInstruction) {
@@ -97,11 +101,12 @@ export async function askGeminiChat(
   systemInstruction?: string
 ): Promise<string> {
   try {
-    // Ensure history ends with model (or is empty) before adding new user msg
-    const cleanHistory = history.filter((_, i) => {
-      if (i === 0) return history[0].role === 'user';
-      return true;
-    });
+    // Ensure history starts with a user message for Gemini API compliance
+    let startIndex = 0;
+    while (startIndex < history.length && history[startIndex].role !== 'user') {
+      startIndex++;
+    }
+    const cleanHistory = history.slice(startIndex);
 
     const contents: GeminiMessage[] = [
       ...cleanHistory,

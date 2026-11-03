@@ -12,36 +12,38 @@ interface Message {
   retryPayload?: { history: GeminiMessage[]; text: string };
 }
 
-const SYSTEM_INSTRUCTION = `You are CyberBot, an AI assistant on the CyberSafe India Portal — a government-grade cyber incident reporting platform for Ministry of Defence personnel (SIH25183).
+const SYSTEM_INSTRUCTION = `You are CyberBot, an elite Cognitive Cyber Safety and Digital Forensics AI Specialist on the CyberSafe India Portal (SIH25183).
 
-Your tone: Professional, clear, and warm — like a knowledgeable support officer who genuinely wants to help. Not robotic or cold. Not overly casual or buddy-like. Think: calm, confident, helpful.
+Your Identity & Mission:
+You are NOT a generic search engine or robotic FAQ bot. You are an expert cyber defense investigator and tactical advisor. You think critically, reason through complex cyber incidents, diagnose attack vectors, provide strategic emergency first-aid, and explain digital safety concepts with depth, clarity, and intelligence.
 
-Response style:
-- Keep it concise — 3 to 5 sentences max for most answers
-- Write in a natural, readable way — not stiff corporate language
-- Acknowledge the user's concern briefly before giving advice
-- Use simple English — avoid heavy technical jargon
-- No excessive bullet points — use them only when listing steps
-- Do not start with "Certainly!", "Of course!", "Great question!" or similar filler phrases
+Your Mindset & Communication Style:
+- Intelligent & Analytical: Don't give surface-level Google answers. Break down the "why" and "how" behind attacks, dissect attack psychology, and provide tactical recommendations.
+- Context-Aware & Adaptive:
+  * In an active emergency (money lost, account hacked, device compromised): Prioritize SPEED and CRISP ACTION. Give immediate golden-hour triage.
+  * In technical or analytical queries: Give deep, insightful, well-structured explanations with real-world examples and attack vectors.
+  * In vague situations: Act like a forensic investigator. Ask 1-2 sharp diagnostic questions (e.g. "Did you enter your UPI PIN or did you only receive an SMS?", "Did the link install an .apk file?").
+- Natural & Conversational: Speak with confidence, empathy, and professional authority. Never use canned repetitive disclaimers at the end of every message.
+- Formatting: Use clean markdown with bolding, concise bullet points, and clear sections when breaking down multi-step actions.
 
-When a user describes a cyber incident:
-1. Briefly acknowledge their situation with empathy (one short sentence)
-2. Give 2-3 clear, actionable steps
-3. Always end with: "👉 You can also report this directly on our portal — click **Report Incident** in the sidebar. Our team will review your case within 24 hours."
-4. If relevant, mention: Helpline 1930 | cybercrime.gov.in
+Deep Knowledge Base:
+- Indian Cyber Threats: Digital Arrest scams, electricity bill APK scams, Telegram part-time job frauds, fake trading/crypto schemes, SIM swap/eSIM traps, courier/FedEx customs scams, loan app blackmail, and UPI QR code reversal tricks.
+- Immediate Containment Protocols:
+  * Financial: Dial 1930 immediately, report to National Cyber Crime Reporting Portal (cybercrime.gov.in), ask bank to place a lien on the beneficiary account, note transaction UTR.
+  * Device/Mobile: Boot in Safe Mode, isolate WiFi/cellular, revoke Device Admin privileges, scan for remote access tools (AnyDesk, RustDesk, QuickSupport).
+  * Account/Identity: Revoke active sessions, check email forwarding rules, lock Aadhaar biometrics via mAadhaar app, block lost IMEI via Sanchar Saathi (CEIR).
+- Broader Digital Safety: End-to-end encryption, Zero-Trust principles, password managers, passkeys vs MFA, phishing domain entropy, social engineering indicators.
 
-Focus areas: UPI fraud, spam calls, phishing, online scams, identity theft, hacking, Aadhaar misuse — all in the Indian context.
-
-If asked something unrelated to cyber safety, politely let them know you can only assist with cyber safety topics.`;
+If asked about our portal: Mention that they can file an official incident report via the 'Report Incident' tab, which uses Gemini AI to analyze threat scores, auto-generate police dossiers, and alert SOC admins in real time.`;
 
 
 
 const QUICK_QUESTIONS = [
-  { emoji: '🎣', label: 'Phishing email help', q: 'I got a phishing email. What should I do immediately?' },
-  { emoji: '💸', label: 'UPI fraud', q: 'I lost money in a UPI fraud. How can I recover it?' },
-  { emoji: '🔐', label: 'Identity theft', q: 'How do I report identity theft in India?' },
-  { emoji: '📞', label: 'Helpline number', q: 'What is the national cybercrime helpline number?' },
-  { emoji: '🛡️', label: 'Secure accounts', q: 'How can I secure my online accounts and prevent hacking?' },
+  { emoji: '⚡', label: 'Electricity bill scam', q: 'I got an SMS saying my electricity bill is unpaid and power will be cut tonight at 9:30 PM. What should I do?' },
+  { emoji: '💸', label: 'UPI money deducted', q: 'Money was debited from my account via UPI fraud. How can I freeze it in the golden hour?' },
+  { emoji: '👮', label: 'Fake police call', q: 'Someone is calling claiming to be from CBI/Police saying my Aadhaar is linked to illegal parcels (Digital Arrest). Is this real?' },
+  { emoji: '🎣', label: 'Suspicious link / APK', q: 'I clicked a strange link and a file started downloading. How do I secure my phone right now?' },
+  { emoji: '🛡️', label: 'Hack recovery', q: 'My WhatsApp / Instagram was hacked. Give me step-by-step account recovery steps.' },
 ];
 
 export default function CyberBot({ inline = false }: { inline?: boolean }) {
@@ -51,7 +53,7 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'model',
-      text: `Hi${profile?.full_name ? ` ${profile.full_name.split(' ')[0]}` : ''}! I'm **CyberBot** 🤖 — your AI cyber safety assistant.\n\nHow can I help you today? You can ask me about phishing, fraud, hacking, or anything cyber safety related.`,
+      text: `Hi${profile?.full_name ? ` ${profile.full_name.split(' ')[0]}` : ''}! I'm **CyberBot** 🤖 — your AI Cyber Defense & Incident Investigator.\n\nWhether you suspect a scam, clicked a suspicious link, experienced fraud, or want to analyze a cyber threat — I'm here to investigate and give you tactical first-aid. What's happening?`,
       timestamp: new Date(),
     },
   ]);
@@ -120,10 +122,15 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
     const userMsg: Message = { role: 'user', text: trimmed, timestamp: new Date() };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
-
-    // Pass the actual conversation history
-    const history = messages.map(m => ({ role: m.role, text: m.text }));
-    await callAI(history, trimmed);
+    // Pass conversation history with proper Gemini parts structure
+    const chatHistory: GeminiMessage[] = nextMessages
+      .filter(m => !m.isError)
+      .slice(0, -1)
+      .map(m => ({
+        role: m.role,
+        parts: [{ text: m.text }],
+      }));
+    await callAI(chatHistory, trimmed);
   };
 
   const handleKey = (e: React.KeyboardEvent) => {
@@ -133,11 +140,26 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
   const escapeHTML = (text: string) => 
     text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
 
-  const formatText = (text: string) =>
-    escapeHTML(text)
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/\n/g, '<br/>');
+  const formatText = (text: string) => {
+    let html = escapeHTML(text);
+    // Headings
+    html = html.replace(/^### (.*?)$/gm, '<h4 class="font-bold text-sky-300 text-sm mt-3 mb-1 font-mono tracking-wide">$1</h4>');
+    html = html.replace(/^## (.*?)$/gm, '<h3 class="font-bold text-sky-200 text-base mt-3 mb-1 font-mono tracking-wide">$1</h3>');
+    // Horizontal rule
+    html = html.replace(/^---$/gm, '<hr class="border-sky-500/20 my-2" />');
+    // Bold & Italic
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em class="text-slate-300">$1</em>');
+    // Inline code
+    html = html.replace(/`([^`]+)`/g, '<code class="bg-slate-900/90 text-sky-300 px-1.5 py-0.5 rounded font-mono text-xs border border-sky-500/30">$1</code>');
+    // Bullet items
+    html = html.replace(/^[•\-\*]\s+(.*?)$/gm, '<div class="flex items-start gap-1.5 my-1 text-slate-200"><span class="text-sky-400 font-bold">•</span><span>$1</span></div>');
+    // Line breaks
+    html = html.replace(/\n/g, '<br/>');
+    // Clean redundant breaks around blocks
+    html = html.replace(/(<\/h[34]>|<\/div>|<hr[^>]*\/>)<br\/>/g, '$1');
+    return html;
+  };
 
   return (
     <>
@@ -176,8 +198,8 @@ export default function CyberBot({ inline = false }: { inline?: boolean }) {
         <div
           className={inline ? "flex flex-col h-full w-full bg-[#0a1628]" : "fixed bottom-6 right-6 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl"}
           style={inline ? {} : {
-            width: '370px',
-            height: minimized ? 'auto' : '540px',
+            width: '410px',
+            height: minimized ? 'auto' : '580px',
             background: '#0a1628',
             border: '1px solid rgba(56,189,248,0.2)',
             boxShadow: '0 0 50px rgba(56,189,248,0.1)',
